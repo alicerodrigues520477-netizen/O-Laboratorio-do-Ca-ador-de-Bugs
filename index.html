@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratório do Caçador de Bugs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  :root{
+    --drawer:#23241f;
+    --tray:#2c2e26;
+    --tray-border:#4a4c3c;
+    --brass:#c9a24a;
+    --brass-bright:#e6c979;
+    --paper:#eee6d3;
+    --ink:#cfc9b8;
+    --ink-dim:#938f7c;
+    --rust:#a1522c;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+
+  body{
+    background:
+      repeating-linear-gradient(
+        0deg,
+        rgba(0,0,0,0.05) 0px,
+        rgba(0,0,0,0.05) 1px,
+        transparent 1px,
+        transparent 3px
+      ),
+      radial-gradient(ellipse at 50% -10%, #2c2d26 0%, var(--drawer) 55%);
+    color:var(--ink);
+    font-family:'Work Sans', system-ui, sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    .rise{
+      opacity:0;
+      animation:rise .8s cubic-bezier(.2,.7,.3,1) forwards;
+    }
+    @keyframes rise{
+      from{opacity:0; transform:translateY(14px);}
+      to{opacity:1; transform:translateY(0);}
+    }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .rise{opacity:1;}
+  }
+
+  .pin{
+    width:9px; height:9px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--brass-bright), var(--brass) 55%, #7a611f 100%);
+    box-shadow:0 1px 2px rgba(0,0,0,.6);
+    margin:0 auto;
+  }
+
+  header{
+    max-width:640px;
+    margin:0 auto;
+    padding:5rem 1.5rem 3rem;
+    text-align:center;
+  }
+
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:.7rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin:1.1rem 0 1.4rem;
+  }
+
+  h1{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    font-size:clamp(2.1rem, 6vw, 3.4rem);
+    color:var(--paper);
+    line-height:1.08;
+    text-wrap:balance;
+    margin:0;
+  }
+
+  .tagline{
+    font-family:'Fraunces', Georgia, serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15rem;
+    color:var(--ink-dim);
+    margin-top:1rem;
+    text-wrap:balance;
+  }
+
+  .divider{
+    display:flex;
+    align-items:center;
+    gap:.8rem;
+    max-width:280px;
+    margin:2.2rem auto 0;
+  }
+  .divider::before,.divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:linear-gradient(90deg, transparent, var(--tray-border), transparent);
+  }
+  .divider span{
+    font-family:'Space Mono', monospace;
+    font-size:.65rem;
+    letter-spacing:.15em;
+    color:var(--ink-dim);
+    white-space:nowrap;
+  }
+
+  main{
+    max-width:900px;
+    margin:0 auto;
+    padding:0 1.5rem 5rem;
+  }
+
+  .intro{
+    max-width:520px;
+    margin:3rem auto 4rem;
+    text-align:center;
+    font-size:1.02rem;
+    line-height:1.7;
+    color:var(--ink);
+  }
+  .intro a{ color:var(--brass); text-decoration-color:rgba(201,162,74,.4); }
+
+  .catalog-label{
+    text-align:center;
+    font-family:'Space Mono', monospace;
+    font-size:.7rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin-bottom:1.8rem;
+  }
+
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(230px,1fr));
+    gap:1.6rem;
+  }
+
+  .card{
+    position:relative;
+    background:var(--tray);
+    border:1px solid var(--tray-border);
+    border-radius:3px;
+    padding:2rem 1.5rem 1.6rem;
+    text-align:center;
+    transition:transform .35s cubic-bezier(.2,.7,.3,1), border-color .35s ease, box-shadow .35s ease;
+  }
+  .card:hover{
+    transform:translateY(-5px) rotate(-0.4deg);
+    border-color:var(--brass);
+    box-shadow:0 14px 28px -14px rgba(0,0,0,.6);
+  }
+  .card .pin{ position:absolute; top:-4.5px; left:50%; transform:translateX(-50%); }
+
+  .specimen-no{
+    font-family:'Space Mono', monospace;
+    font-size:.68rem;
+    letter-spacing:.14em;
+    color:var(--rust);
+    margin-top:.6rem;
+  }
+
+  .card h3{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    font-size:1.3rem;
+    color:var(--paper);
+    margin:.6rem 0 .7rem;
+  }
+
+  .card p{
+    font-size:.92rem;
+    line-height:1.6;
+    color:var(--ink-dim);
+    margin:0;
+  }
+
+  footer{
+    text-align:center;
+    padding:2.5rem 1.5rem 3rem;
+  }
+  footer .pin{ margin-bottom:.9rem; }
+  footer p{
+    font-family:'Space Mono', monospace;
+    font-size:.72rem;
+    letter-spacing:.08em;
+    color:var(--ink-dim);
+  }
+  footer strong{ color:var(--brass); font-weight:400; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="pin rise" style="animation-delay:.05s"></div>
+  <p class="eyebrow rise" style="animation-delay:.12s">Coleção pessoal &middot; Espécimes catalogados desde 2026</p>
+  <h1 class="rise" style="animation-delay:.18s">Laboratório do<br>Caçador de Bugs</h1>
+  <p class="tagline rise" style="animation-delay:.26s">Onde falhas de software são capturadas, etiquetadas e estudadas com curiosidade.</p>
+  <div class="divider rise" style="animation-delay:.32s"><span>Nº 000 — Início do catálogo</span></div>
+</header>
+
+<main>
+  <p class="intro rise" style="animation-delay:.38s">
+    Este é meu primeiro projeto de <em>vibe coding</em>: um site simples,
+    montado com HTML e CSS, hospedado no GitHub Pages. Aqui vou registrar
+    o que aprendo caçando bugs e explorando segurança de software —
+    um espécime de cada vez.
+  </p>
+
+  <p class="catalog-label rise" style="animation-delay:.44s">Gaveta 01 — Método de estudo</p>
+  <div class="cards">
+    <div class="card rise" style="animation-delay:.5s">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 001</div>
+      <h3>Aprender</h3>
+      <p>Estudar conceitos de segurança e desenvolvimento web, um pouco a cada dia.</p>
+    </div>
+    <div class="card rise" style="animation-delay:.56s">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 002</div>
+      <h3>Praticar</h3>
+      <p>Testar ideias em projetos pequenos, reais e visíveis — como este.</p>
+    </div>
+    <div class="card rise" style="animation-delay:.62s">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 003</div>
+      <h3>Evoluir</h3>
+      <p>Construir um portfólio de descobertas, um espécime de cada vez.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="pin"></div>
+  <p>&copy; 2026 <strong>Laboratório do Caçador de Bugs</strong> — catalogado no GitHub Pages</p>
+</footer>
+
+</body>
+</html>
