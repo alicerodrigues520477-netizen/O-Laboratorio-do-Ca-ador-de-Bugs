@@ -18,6 +18,7 @@
     --ink:#cfc9b8;
     --ink-dim:#938f7c;
     --rust:#a1522c;
+    --sage:#7c8f6e;
   }
 
   *{box-sizing:border-box;}
@@ -188,6 +189,91 @@
     margin:0;
   }
 
+  .specimen-card{
+    position:relative;
+    background:var(--tray);
+    border:1px solid var(--tray-border);
+    border-radius:3px;
+    padding:2rem 1.5rem 1.5rem;
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap:.9rem;
+    transition:transform .35s cubic-bezier(.2,.7,.3,1), border-color .35s ease, box-shadow .35s ease;
+  }
+  .specimen-card:hover{
+    transform:translateY(-5px) rotate(-0.4deg);
+    border-color:var(--brass);
+    box-shadow:0 14px 28px -14px rgba(0,0,0,.6);
+  }
+  .specimen-card .pin{ position:absolute; top:-4.5px; left:50%; transform:translateX(-50%); }
+
+  .specimen-card__head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:.8rem;
+  }
+  .specimen-card__head .specimen-no{ margin-top:0; }
+
+  .severity{
+    display:inline-flex;
+    align-items:center;
+    gap:.4rem;
+    font-family:'Space Mono', monospace;
+    font-size:.64rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:.25rem .55rem;
+    border-radius:2px;
+    border:1px solid currentColor;
+    white-space:nowrap;
+  }
+  .severity::before{
+    content:"";
+    width:6px; height:6px;
+    border-radius:50%;
+    background:currentColor;
+  }
+  .severity--alta{ color:var(--rust); }
+  .severity--media{ color:var(--brass); }
+  .severity--baixa{ color:var(--sage); }
+
+  .specimen-card h3{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    font-size:1.15rem;
+    color:var(--paper);
+    margin:0;
+  }
+
+  .specimen-desc{
+    font-size:.9rem;
+    line-height:1.6;
+    color:var(--ink-dim);
+    margin:0;
+  }
+
+  .specimen-card__foot{
+    margin-top:.2rem;
+    display:flex;
+    justify-content:flex-end;
+  }
+
+  .status-stamp{
+    font-family:'Space Mono', monospace;
+    font-size:.6rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    padding:.3rem .6rem;
+    border:1px dashed currentColor;
+    border-radius:2px;
+    transform:rotate(-3deg);
+  }
+  .status--capturado{ color:var(--ink-dim); }
+  .status--analise{ color:var(--brass); }
+  .status--corrigido{ color:var(--sage); }
+
   footer{
     text-align:center;
     padding:2.5rem 1.5rem 3rem;
@@ -239,6 +325,48 @@
       <div class="specimen-no">Nº 003</div>
       <h3>Evoluir</h3>
       <p>Construir um portfólio de descobertas, um espécime de cada vez.</p>
+    </div>
+  </div>
+
+  <p class="catalog-label rise" style="animation-delay:.68s">Gaveta 02 — Espécimes catalogados</p>
+  <div class="cards">
+    <div class="specimen-card rise" style="animation-delay:.74s">
+      <span class="pin"></span>
+      <div class="specimen-card__head">
+        <span class="specimen-no">Nº 004</span>
+        <span class="severity severity--alta">Alta</span>
+      </div>
+      <h3>Validação de Formulário</h3>
+      <p class="specimen-desc">Campo de e-mail aceita valores sem "@", permitindo cadastros inválidos no banco de dados.</p>
+      <div class="specimen-card__foot">
+        <span class="status-stamp status--analise">Em análise</span>
+      </div>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:.8s">
+      <span class="pin"></span>
+      <div class="specimen-card__head">
+        <span class="specimen-no">Nº 005</span>
+        <span class="severity severity--media">Média</span>
+      </div>
+      <h3>Broken Link</h3>
+      <p class="specimen-desc">Link do rodapé "Sobre" aponta para uma página que não existe (erro 404).</p>
+      <div class="specimen-card__foot">
+        <span class="status-stamp status--capturado">Capturado</span>
+      </div>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:.86s">
+      <span class="pin"></span>
+      <div class="specimen-card__head">
+        <span class="specimen-no">Nº 006</span>
+        <span class="severity severity--baixa">Baixa</span>
+      </div>
+      <h3>UI Inconsistente</h3>
+      <p class="specimen-desc">Botões de "Enviar" usam bordas arredondadas diferentes entre as páginas do site.</p>
+      <div class="specimen-card__foot">
+        <span class="status-stamp status--corrigido">Corrigido</span>
+      </div>
     </div>
   </div>
 </main>
