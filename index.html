@@ -498,6 +498,23 @@
   .submit-btn:active{
     transform:translateY(0);
   }
+  .submit-btn:disabled{
+    opacity:.6;
+    cursor:default;
+    transform:none;
+  }
+
+  .form-status{
+    display:none;
+    margin:1rem 0 0;
+    font-family:'Space Mono', monospace;
+    font-size:.75rem;
+    letter-spacing:.03em;
+    line-height:1.5;
+  }
+  .form-status.is-visible{ display:block; }
+  .form-status--success{ color:var(--sage); }
+  .form-status--error{ color:var(--rust); }
 
   footer{
     text-align:center;
@@ -661,7 +678,9 @@
   <div class="contact-card rise" style="animation-delay:1.52s">
     <span class="pin"></span>
     <p class="contact-note">Achou um bug, tem uma sugestão ou quer trocar uma ideia? Deixe sua pista abaixo.</p>
-    <form class="contact-form" action="#" method="POST">
+    <form class="contact-form" id="contact-form" action="https://formspree.io/f/xkjnplwg" method="POST">
+      <input type="hidden" name="_subject" value="Nova pista — Laboratório do Caçador de Bugs">
+      <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" style="position:absolute; left:-9999px;">
       <div class="field">
         <label for="contact-name">Nome</label>
         <input type="text" id="contact-name" name="name" placeholder="Como posso te chamar?" required>
@@ -686,9 +705,46 @@
         <textarea id="contact-message" name="message" placeholder="Conte os detalhes da sua pista..." required></textarea>
       </div>
       <button type="submit" class="submit-btn">Enviar pista</button>
+      <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
     </form>
   </div>
 </main>
+
+<script>
+  const contactForm = document.getElementById('contact-form');
+  const formStatus = document.getElementById('form-status');
+
+  contactForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitBtn = contactForm.querySelector('.submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+    formStatus.className = 'form-status';
+
+    try {
+      const response = await fetch(contactForm.action, {
+        method: 'POST',
+        body: new FormData(contactForm),
+        headers: { Accept: 'application/json' }
+      });
+
+      if (response.ok) {
+        formStatus.textContent = 'Pista recebida! Vou responder assim que possível.';
+        formStatus.classList.add('is-visible', 'form-status--success');
+        contactForm.reset();
+      } else {
+        formStatus.textContent = 'Não consegui enviar. Tente de novo em instantes.';
+        formStatus.classList.add('is-visible', 'form-status--error');
+      }
+    } catch (error) {
+      formStatus.textContent = 'Sem conexão com o servidor. Tente de novo.';
+      formStatus.classList.add('is-visible', 'form-status--error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar pista';
+    }
+  });
+</script>
 
 <footer>
   <div class="pin"></div>
