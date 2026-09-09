@@ -744,11 +744,46 @@
       <span class="tag">Testes E2E (End-to-End)</span>
       <p class="specimen-desc">Estudo scripts pra simular a jornada do usuário, com asserções de elementos e validação de fluxos críticos.</p>
     </div>
+
+    <div class="specimen-card rise" style="animation-delay:1.16s" data-modal="tool010" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 010</div>
+      <h3>Jira</h3>
+      <span class="tag">Gestão de Defeitos &amp; Metodologia Ágil</span>
+      <p class="specimen-desc">Registro reports de bugs, acompanho o ciclo de vida das falhas e organizo tarefas de teste em quadros Kanban/Scrum.</p>
+    </div>
   </div>
 
-  <p class="catalog-label rise" style="animation-delay:1.22s">Diário de Campo</p>
+  <p class="catalog-label rise" style="animation-delay:1.22s">Gaveta 04 — Diário de Campo</p>
   <div class="journal">
     <article class="journal-entry rise" style="animation-delay:1.28s">
+      <div class="journal-entry__meta">
+        <time class="journal-date">28 set 2026</time>
+        <span class="tag">#QA</span>
+      </div>
+      <h3>Como escrever um bug report que o time realmente usa</h3>
+      <p>Aprendi que um bom report tem passos claros pra reproduzir, comportamento esperado x encontrado, severidade e evidência (print ou log) — sem isso, o dev perde tempo só tentando entender o problema.</p>
+    </article>
+
+    <article class="journal-entry rise" style="animation-delay:1.34s">
+      <div class="journal-entry__meta">
+        <time class="journal-date">22 set 2026</time>
+        <span class="tag">#TestesManuais</span>
+      </div>
+      <h3>Testando valores-limite (boundary testing)</h3>
+      <p>Pratiquei testar os extremos de um campo numérico — mínimo, máximo, um valor abaixo e um acima. É nessas bordas que a maioria dos bugs de validação aparece.</p>
+    </article>
+
+    <article class="journal-entry rise" style="animation-delay:1.4s">
+      <div class="journal-entry__meta">
+        <time class="journal-date">16 set 2026</time>
+        <span class="tag">#QA</span>
+      </div>
+      <h3>Priorizando bugs: impacto x frequência</h3>
+      <p>Estudei uma matriz simples pra decidir o que corrigir primeiro: bugs de alto impacto e alta frequência sobem pro topo da fila, os de baixo impacto e baixa frequência esperam.</p>
+    </article>
+
+    <article class="journal-entry rise" style="animation-delay:1.46s">
       <div class="journal-entry__meta">
         <time class="journal-date">08 set 2026</time>
         <span class="tag">#TestesManuais</span>
@@ -757,7 +792,7 @@
       <p>Entendi melhor quando vale a pena escrever um teste automatizado e quando um teste exploratório manual encontra mais problemas reais, principalmente em telas novas.</p>
     </article>
 
-    <article class="journal-entry rise" style="animation-delay:1.34s">
+    <article class="journal-entry rise" style="animation-delay:1.52s">
       <div class="journal-entry__meta">
         <time class="journal-date">03 set 2026</time>
         <span class="tag">#Acessibilidade</span>
@@ -766,7 +801,7 @@
       <p>Estudei os princípios POUR e comecei a testar navegação só com teclado — descobri três armadilhas de foco que eu nunca tinha percebido antes.</p>
     </article>
 
-    <article class="journal-entry rise" style="animation-delay:1.4s">
+    <article class="journal-entry rise" style="animation-delay:1.58s">
       <div class="journal-entry__meta">
         <time class="journal-date">28 ago 2026</time>
         <span class="tag">#QA</span>
@@ -776,8 +811,8 @@
     </article>
   </div>
 
-  <p class="catalog-label rise" style="animation-delay:1.46s">Enviar Pista ou Mensagem</p>
-  <div class="contact-card rise" style="animation-delay:1.52s">
+  <p class="catalog-label rise" style="animation-delay:1.64s">Enviar Pista ou Mensagem</p>
+  <div class="contact-card rise" style="animation-delay:1.7s">
     <span class="pin"></span>
     <p class="contact-note">Achou um bug, tem uma sugestão ou quer trocar uma ideia? Deixe sua pista abaixo.</p>
     <form class="contact-form" id="contact-form" action="https://formspree.io/f/xkjnplwg" method="POST">
@@ -1053,6 +1088,20 @@
         <div class="modal-section">
           <h4>Como utilizo</h4>
           <p>Estudo de scripts automatizados para simulação de jornada de usuário em páginas web, asserções de elementos em tela e validação de fluxos críticos.</p>
+        </div>
+      `
+    },
+    tool010: {
+      no: 'Nº 010',
+      title: 'Jira',
+      html: `
+        <div class="modal-section">
+          <h4>Categoria</h4>
+          <p>Gestão de Defeitos &amp; Metodologia Ágil</p>
+        </div>
+        <div class="modal-section">
+          <h4>Como utilizo</h4>
+          <p>Registro de reports de bugs detalhados, acompanhamento do ciclo de vida das falhas e organização de tarefas de teste em quadros Kanban/Scrum.</p>
         </div>
       `
     }
