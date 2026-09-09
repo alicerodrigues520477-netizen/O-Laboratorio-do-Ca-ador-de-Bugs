@@ -210,6 +210,8 @@
     box-shadow:0 14px 28px -14px rgba(0,0,0,.6);
   }
   .specimen-card .pin{ position:absolute; top:-4.5px; left:50%; transform:translateX(-50%); }
+  .specimen-card[data-modal]{ cursor:pointer; }
+  .specimen-card[data-modal]:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
 
   .specimen-card__head{
     display:flex;
@@ -640,6 +642,39 @@
     color:var(--brass);
   }
 
+  .modal-steps{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:.55rem;
+    counter-reset:step;
+  }
+  .modal-steps li{
+    position:relative;
+    padding-left:1.6rem;
+    font-size:.94rem;
+    line-height:1.6;
+    color:var(--ink);
+    counter-increment:step;
+  }
+  .modal-steps li::before{
+    content:counter(step) ".";
+    position:absolute;
+    left:0;
+    color:var(--brass);
+    font-family:'Space Mono', monospace;
+    font-size:.85rem;
+  }
+
+  .modal-meta{
+    display:flex;
+    align-items:center;
+    gap:.7rem;
+    margin-bottom:1.4rem;
+  }
+
   footer{
     text-align:center;
     padding:2.5rem 1.5rem 3rem;
@@ -696,7 +731,7 @@
 
   <p class="catalog-label rise" style="animation-delay:.68s">Gaveta 02 — Espécimes catalogados</p>
   <div class="cards">
-    <div class="specimen-card rise" style="animation-delay:.74s">
+    <div class="specimen-card rise" style="animation-delay:.74s" data-modal="bug004" role="button" tabindex="0" aria-haspopup="dialog">
       <span class="pin"></span>
       <div class="specimen-card__head">
         <span class="specimen-no">Nº 004</span>
@@ -709,7 +744,7 @@
       </div>
     </div>
 
-    <div class="specimen-card rise" style="animation-delay:.8s">
+    <div class="specimen-card rise" style="animation-delay:.8s" data-modal="bug005" role="button" tabindex="0" aria-haspopup="dialog">
       <span class="pin"></span>
       <div class="specimen-card__head">
         <span class="specimen-no">Nº 005</span>
@@ -722,7 +757,7 @@
       </div>
     </div>
 
-    <div class="specimen-card rise" style="animation-delay:.86s">
+    <div class="specimen-card rise" style="animation-delay:.86s" data-modal="bug006" role="button" tabindex="0" aria-haspopup="dialog">
       <span class="pin"></span>
       <div class="specimen-card__head">
         <span class="specimen-no">Nº 006</span>
@@ -935,6 +970,106 @@
           <p>QA não é um destino fixo — a cada espécime catalogado eu entendo um pouco mais sobre como o software falha, e é isso que mantém o laboratório sempre aberto.</p>
         </div>
       `
+    },
+    bug004: {
+      no: 'Nº 004',
+      title: 'Validação de Formulário',
+      html: `
+        <div class="modal-meta">
+          <span class="severity severity--alta">Alta</span>
+          <span class="status-stamp status--analise">Em análise</span>
+        </div>
+        <div class="modal-section">
+          <h4>Título do bug</h4>
+          <p>Ausência de validação de formato de e-mail no formulário de cadastro.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Passos para reproduzir</h4>
+          <ol class="modal-steps">
+            <li>Acessar o formulário.</li>
+            <li>Preencher o campo com texto sem "@" e sem domínio.</li>
+            <li>Clicar em "Enviar".</li>
+          </ol>
+        </div>
+        <div class="modal-section">
+          <h4>Comportamento esperado</h4>
+          <p>Exibir mensagem de erro de validação do lado do cliente, bloqueando o envio.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Comportamento encontrado</h4>
+          <p>Formulário enviado com sucesso e dados inválidos gravados no sistema.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Ferramentas utilizadas</h4>
+          <p>Chrome DevTools (aba Network e Console).</p>
+        </div>
+      `
+    },
+    bug005: {
+      no: 'Nº 005',
+      title: 'Broken Link',
+      html: `
+        <div class="modal-meta">
+          <span class="severity severity--media">Média</span>
+          <span class="status-stamp status--capturado">Capturado</span>
+        </div>
+        <div class="modal-section">
+          <h4>Título do bug</h4>
+          <p>Link do rodapé direcionando para página inexistente (erro 404).</p>
+        </div>
+        <div class="modal-section">
+          <h4>Passos para reproduzir</h4>
+          <ol class="modal-steps">
+            <li>Rolar até o rodapé.</li>
+            <li>Clicar no link "Sobre o Projeto".</li>
+          </ol>
+        </div>
+        <div class="modal-section">
+          <h4>Comportamento esperado</h4>
+          <p>Redirecionar para a seção ou página de informações institucionais.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Comportamento encontrado</h4>
+          <p>Página de erro 404 do servidor.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Ferramentas utilizadas</h4>
+          <p>Navegação exploratória e verificação de status HTTP.</p>
+        </div>
+      `
+    },
+    bug006: {
+      no: 'Nº 006',
+      title: 'UI Inconsistente',
+      html: `
+        <div class="modal-meta">
+          <span class="severity severity--baixa">Baixa</span>
+          <span class="status-stamp status--corrigido">Corrigido</span>
+        </div>
+        <div class="modal-section">
+          <h4>Título do bug</h4>
+          <p>Incompatibilidade de border-radius e estilo de botões entre telas.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Passos para reproduzir</h4>
+          <ol class="modal-steps">
+            <li>Navegar da Home para a tela de relatórios.</li>
+            <li>Comparar o design do botão "Enviar".</li>
+          </ol>
+        </div>
+        <div class="modal-section">
+          <h4>Comportamento esperado</h4>
+          <p>Padronização visual conforme o guia de estilos (design system) da aplicação.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Comportamento encontrado</h4>
+          <p>Botões com cantos arredondados e cores de fundo divergentes.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Ferramentas utilizadas</h4>
+          <p>Chrome DevTools (inspeção CSS / Elementos).</p>
+        </div>
+      `
     }
   };
 
@@ -963,7 +1098,7 @@
     if (lastFocusedEl) lastFocusedEl.focus();
   }
 
-  document.querySelectorAll('.card[data-modal]').forEach((card) => {
+  document.querySelectorAll('[data-modal]').forEach((card) => {
     card.addEventListener('click', () => openModal(card.dataset.modal));
     card.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
