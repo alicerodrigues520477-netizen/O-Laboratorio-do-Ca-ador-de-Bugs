@@ -291,6 +291,8 @@
   .journal-entry{
     position:relative;
   }
+  .journal-entry[data-modal]{ cursor:pointer; }
+  .journal-entry[data-modal]:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
   .journal-entry::before{
     content:"";
     position:absolute;
@@ -756,7 +758,7 @@
 
   <p class="catalog-label rise" style="animation-delay:1.22s">Gaveta 04 — Diário de Campo</p>
   <div class="journal">
-    <article class="journal-entry rise" style="animation-delay:1.28s">
+    <article class="journal-entry rise" style="animation-delay:1.28s" data-modal="journalBugReport" role="button" tabindex="0" aria-haspopup="dialog">
       <div class="journal-entry__meta">
         <time class="journal-date">28 set 2026</time>
         <span class="tag">#QA</span>
@@ -765,7 +767,7 @@
       <p>Aprendi que um bom report tem passos claros pra reproduzir, comportamento esperado x encontrado, severidade e evidência (print ou log) — sem isso, o dev perde tempo só tentando entender o problema.</p>
     </article>
 
-    <article class="journal-entry rise" style="animation-delay:1.34s">
+    <article class="journal-entry rise" style="animation-delay:1.34s" data-modal="journalBoundary" role="button" tabindex="0" aria-haspopup="dialog">
       <div class="journal-entry__meta">
         <time class="journal-date">22 set 2026</time>
         <span class="tag">#TestesManuais</span>
@@ -774,7 +776,7 @@
       <p>Pratiquei testar os extremos de um campo numérico — mínimo, máximo, um valor abaixo e um acima. É nessas bordas que a maioria dos bugs de validação aparece.</p>
     </article>
 
-    <article class="journal-entry rise" style="animation-delay:1.4s">
+    <article class="journal-entry rise" style="animation-delay:1.4s" data-modal="journalPriority" role="button" tabindex="0" aria-haspopup="dialog">
       <div class="journal-entry__meta">
         <time class="journal-date">16 set 2026</time>
         <span class="tag">#QA</span>
@@ -1102,6 +1104,68 @@
         <div class="modal-section">
           <h4>Como utilizo</h4>
           <p>Registro de reports de bugs detalhados, acompanhamento do ciclo de vida das falhas e organização de tarefas de teste em quadros Kanban/Scrum.</p>
+        </div>
+      `
+    },
+    journalBugReport: {
+      no: '28 set 2026',
+      title: 'Anatomia de um Bug Report Perfeito',
+      html: `
+        <div class="modal-section">
+          <h4>Título claro</h4>
+          <p>Um bom título resume o problema em uma linha específica — "Botão Enviar não responde no Safari" diz muito mais que "bug no formulário". Isso ajuda o time a triar rápido e evita relatórios duplicados.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Passos de reprodução</h4>
+          <p>Listar o caminho exato até o erro, numerado e sem pular etapas, é o que permite que outra pessoa reproduza o bug sem precisar te perguntar nada.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Ambiente (SO/Navegador)</h4>
+          <p>Sistema operacional, navegador e versão, resolução de tela — muitos bugs só aparecem em combinações específicas, e sem esse dado o time perde tempo tentando adivinhar onde reproduzir.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Logs e evidências visuais</h4>
+          <p>Um print, uma gravação de tela ou um trecho do console vale mais que qualquer descrição — mostra o erro exatamente como ele aconteceu, sem margem pra interpretação.</p>
+        </div>
+      `
+    },
+    journalBoundary: {
+      no: '22 set 2026',
+      title: 'Técnicas de Análise de Valor Limite',
+      html: `
+        <div class="modal-section">
+          <h4>O que é</h4>
+          <p>Boundary Testing parte da ideia de que a maioria dos bugs de validação mora nas bordas de um intervalo aceito, não no meio dele.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Limites mínimo e máximo</h4>
+          <p>Testo o menor e o maior valor que o campo deveria aceitar — se ele aceita de 1 a 100, testo exatamente 1 e exatamente 100.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Valores fora do intervalo</h4>
+          <p>Depois testo um valor logo abaixo do mínimo e logo acima do máximo (0 e 101, no exemplo) — é aí que a validação costuma falhar.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Por que funciona</h4>
+          <p>Erros de comparação (usar "menor ou igual" no lugar de "menor que", por exemplo) só aparecem exatamente nessas bordas — testar só valores do meio deixa esse tipo de bug passar.</p>
+        </div>
+      `
+    },
+    journalPriority: {
+      no: '16 set 2026',
+      title: 'Matriz de Severidade vs. Prioridade',
+      html: `
+        <div class="modal-section">
+          <h4>Severidade x prioridade</h4>
+          <p>Severidade mede o tamanho do estrago técnico (trava o sistema? corrompe dados?). Prioridade mede a urgência de corrigir. Um bug pode ser grave mas raro, ou pequeno mas afetar todo mundo — por isso as duas escalas não são a mesma coisa.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Como cruzo as duas</h4>
+          <p>Severidade alta + prioridade alta corrige primeiro. Severidade alta + prioridade baixa (bug raro e grave) entra na fila logo depois. Severidade baixa + prioridade alta (cosmético mas muito visível) fica em terceiro. Severidade baixa + prioridade baixa espera.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Por que ajuda o time</h4>
+          <p>Uma matriz simples tira a decisão do "achismo" e dá à equipe de desenvolvimento um critério objetivo pra decidir o que corrigir primeiro quando a lista de bugs é maior que o tempo disponível.</p>
         </div>
       `
     }
