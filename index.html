@@ -279,58 +279,6 @@
   .status--analise{ color:var(--brass); }
   .status--corrigido{ color:var(--sage); }
 
-  .tools-list{
-    display:flex;
-    flex-direction:column;
-  }
-
-  .tool-row{
-    display:flex;
-    align-items:flex-start;
-    gap:1.2rem;
-    padding:1.4rem 0;
-    border-bottom:1px dashed var(--tray-border);
-  }
-  .tool-row:first-child{
-    border-top:1px dashed var(--tray-border);
-  }
-  .tool-row:hover .tool-icon{
-    border-color:var(--brass);
-    color:var(--brass-bright);
-  }
-
-  .tool-icon{
-    flex:0 0 auto;
-    width:2.6rem;
-    height:2.6rem;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border:1px solid var(--tray-border);
-    border-radius:3px;
-    background:var(--tray);
-    font-family:'Space Mono', monospace;
-    font-size:.72rem;
-    letter-spacing:.02em;
-    color:var(--brass);
-    transition:border-color .3s ease, color .3s ease;
-  }
-
-  .tool-body h3{
-    font-family:'Fraunces', Georgia, serif;
-    font-weight:600;
-    font-size:1.1rem;
-    color:var(--paper);
-    margin:0 0 .35rem;
-  }
-
-  .tool-body p{
-    font-size:.9rem;
-    line-height:1.6;
-    color:var(--ink-dim);
-    margin:0;
-  }
-
   .journal{
     position:relative;
     display:flex;
@@ -771,35 +719,30 @@
     </div>
   </div>
 
-  <p class="catalog-label rise" style="animation-delay:.92s">Ferramentas do Laboratório</p>
-  <div class="tools-list">
-    <div class="tool-row rise" style="animation-delay:.98s">
-      <span class="tool-icon">DT</span>
-      <div class="tool-body">
-        <h3>DevTools</h3>
-        <p>Uso pra inspecionar elementos, depurar JavaScript no console e simular rede lenta ou dispositivos móveis.</p>
-      </div>
+  <p class="catalog-label rise" style="animation-delay:.92s">Gaveta 03 — Ferramentas do Laboratório</p>
+  <div class="cards">
+    <div class="specimen-card rise" style="animation-delay:.98s" data-modal="tool007" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 007</div>
+      <h3>Chrome DevTools</h3>
+      <span class="tag">Inspeção &amp; Debugging Web</span>
+      <p class="specimen-desc">Inspeciono elementos HTML/CSS, valido status HTTP na aba Network e monitoro erros de script no Console.</p>
     </div>
-    <div class="tool-row rise" style="animation-delay:1.04s">
-      <span class="tool-icon">PM</span>
-      <div class="tool-body">
-        <h3>Postman</h3>
-        <p>Uso pra testar endpoints de API, validar respostas e organizar coleções de requisições.</p>
-      </div>
+
+    <div class="specimen-card rise" style="animation-delay:1.04s" data-modal="tool008" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 008</div>
+      <h3>Postman / Testes de API</h3>
+      <span class="tag">Validação de Backend &amp; APIs REST</span>
+      <p class="specimen-desc">Monto requisições GET, POST, PUT e DELETE e valido headers, tokens e respostas em JSON.</p>
     </div>
-    <div class="tool-row rise" style="animation-delay:1.1s">
-      <span class="tool-icon">CY</span>
-      <div class="tool-body">
-        <h3>Cypress</h3>
-        <p>Uso pra escrever testes end-to-end automatizados e verificar fluxos críticos antes de qualquer deploy.</p>
-      </div>
-    </div>
-    <div class="tool-row rise" style="animation-delay:1.16s">
-      <span class="tool-icon">JR</span>
-      <div class="tool-body">
-        <h3>Jira</h3>
-        <p>Uso pra registrar bugs encontrados, acompanhar prioridades e organizar o backlog de correções.</p>
-      </div>
+
+    <div class="specimen-card rise" style="animation-delay:1.1s" data-modal="tool009" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 009</div>
+      <h3>Cypress / Automação</h3>
+      <span class="tag">Testes E2E (End-to-End)</span>
+      <p class="specimen-desc">Estudo scripts pra simular a jornada do usuário, com asserções de elementos e validação de fluxos críticos.</p>
     </div>
   </div>
 
@@ -1068,6 +1011,48 @@
         <div class="modal-section">
           <h4>Ferramentas utilizadas</h4>
           <p>Chrome DevTools (inspeção CSS / Elementos).</p>
+        </div>
+      `
+    },
+    tool007: {
+      no: 'Nº 007',
+      title: 'Chrome DevTools',
+      html: `
+        <div class="modal-section">
+          <h4>Categoria</h4>
+          <p>Inspeção &amp; Debugging Web</p>
+        </div>
+        <div class="modal-section">
+          <h4>Como utilizo</h4>
+          <p>Inspeção de elementos HTML/CSS, verificação de requisições de rede (aba Network) para validar status HTTP (200, 404, 500) e monitoramento de erros de scripts na aba Console.</p>
+        </div>
+      `
+    },
+    tool008: {
+      no: 'Nº 008',
+      title: 'Postman / Testes de API',
+      html: `
+        <div class="modal-section">
+          <h4>Categoria</h4>
+          <p>Validação de Backend &amp; APIs REST</p>
+        </div>
+        <div class="modal-section">
+          <h4>Como utilizo</h4>
+          <p>Criação e envio de requisições GET, POST, PUT e DELETE. Validação de headers, tokens de autenticação e verificação das respostas em formato JSON.</p>
+        </div>
+      `
+    },
+    tool009: {
+      no: 'Nº 009',
+      title: 'Cypress / Automação',
+      html: `
+        <div class="modal-section">
+          <h4>Categoria</h4>
+          <p>Testes E2E (End-to-End)</p>
+        </div>
+        <div class="modal-section">
+          <h4>Como utilizo</h4>
+          <p>Estudo de scripts automatizados para simulação de jornada de usuário em páginas web, asserções de elementos em tela e validação de fluxos críticos.</p>
         </div>
       `
     }
