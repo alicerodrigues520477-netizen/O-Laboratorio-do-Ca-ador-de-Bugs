@@ -39,6 +39,7 @@
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
   }
+  body.modal-open{ overflow:hidden; }
 
   @media (prefers-reduced-motion: no-preference){
     .rise{
@@ -165,6 +166,8 @@
     box-shadow:0 14px 28px -14px rgba(0,0,0,.6);
   }
   .card .pin{ position:absolute; top:-4.5px; left:50%; transform:translateX(-50%); }
+  .card[data-modal]{ cursor:pointer; }
+  .card[data-modal]:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
 
   .specimen-no{
     font-family:'Space Mono', monospace;
@@ -516,6 +519,127 @@
   .form-status--success{ color:var(--sage); }
   .form-status--error{ color:var(--rust); }
 
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:1.5rem;
+    background:rgba(10,10,8,.72);
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .3s ease, visibility .3s ease;
+  }
+  .modal-overlay.is-open{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+  }
+
+  .modal{
+    position:relative;
+    width:100%;
+    max-width:560px;
+    max-height:85vh;
+    overflow-y:auto;
+    background:var(--tray);
+    border:1px solid var(--tray-border);
+    border-radius:4px;
+    padding:2.6rem 2rem 2.2rem;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.7);
+    transform:translateY(16px) scale(.98);
+    transition:transform .3s cubic-bezier(.2,.7,.3,1);
+  }
+  .modal-overlay.is-open .modal{
+    transform:translateY(0) scale(1);
+  }
+  .modal .pin{ position:absolute; top:-4.5px; left:50%; transform:translateX(-50%); }
+
+  .modal-close{
+    position:absolute;
+    top:1rem;
+    right:1rem;
+    width:2rem;
+    height:2rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:transparent;
+    border:1px solid var(--tray-border);
+    border-radius:2px;
+    color:var(--ink-dim);
+    font-family:'Space Mono', monospace;
+    font-size:1rem;
+    line-height:1;
+    cursor:pointer;
+    transition:border-color .3s ease, color .3s ease;
+  }
+  .modal-close:hover{
+    border-color:var(--brass);
+    color:var(--brass-bright);
+  }
+
+  .modal-no{
+    font-family:'Space Mono', monospace;
+    font-size:.68rem;
+    letter-spacing:.14em;
+    color:var(--rust);
+  }
+
+  .modal h2{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    font-size:1.6rem;
+    color:var(--paper);
+    margin:.5rem 0 1.5rem;
+  }
+
+  .modal-section{
+    margin-bottom:1.4rem;
+  }
+  .modal-section:last-child{
+    margin-bottom:0;
+  }
+  .modal-section h4{
+    font-family:'Space Mono', monospace;
+    font-size:.68rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin:0 0 .7rem;
+  }
+  .modal-section p{
+    font-size:.94rem;
+    line-height:1.7;
+    color:var(--ink);
+    margin:0;
+  }
+
+  .modal-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:.55rem;
+  }
+  .modal-list li{
+    position:relative;
+    padding-left:1.3rem;
+    font-size:.94rem;
+    line-height:1.6;
+    color:var(--ink);
+  }
+  .modal-list li::before{
+    content:"—";
+    position:absolute;
+    left:0;
+    color:var(--brass);
+  }
+
   footer{
     text-align:center;
     padding:2.5rem 1.5rem 3rem;
@@ -550,19 +674,19 @@
 
   <p class="catalog-label rise" style="animation-delay:.44s">Gaveta 01 — Método de estudo</p>
   <div class="cards">
-    <div class="card rise" style="animation-delay:.5s">
+    <div class="card rise" style="animation-delay:.5s" data-modal="aprender" role="button" tabindex="0" aria-haspopup="dialog">
       <span class="pin"></span>
       <div class="specimen-no">Nº 001</div>
       <h3>Aprender</h3>
       <p>Estudar conceitos de segurança e desenvolvimento web, um pouco a cada dia.</p>
     </div>
-    <div class="card rise" style="animation-delay:.56s">
+    <div class="card rise" style="animation-delay:.56s" data-modal="praticar" role="button" tabindex="0" aria-haspopup="dialog">
       <span class="pin"></span>
       <div class="specimen-no">Nº 002</div>
       <h3>Praticar</h3>
       <p>Testar ideias em projetos pequenos, reais e visíveis — como este.</p>
     </div>
-    <div class="card rise" style="animation-delay:.62s">
+    <div class="card rise" style="animation-delay:.62s" data-modal="evoluir" role="button" tabindex="0" aria-haspopup="dialog">
       <span class="pin"></span>
       <div class="specimen-no">Nº 003</div>
       <h3>Evoluir</h3>
@@ -743,6 +867,118 @@
       submitBtn.disabled = false;
       submitBtn.textContent = 'Enviar pista';
     }
+  });
+</script>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <span class="pin"></span>
+    <button type="button" class="modal-close" id="modal-close" aria-label="Fechar">✕</button>
+    <div class="modal-no" id="modal-no"></div>
+    <h2 id="modal-title"></h2>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+  const MODAL_CONTENT = {
+    aprender: {
+      no: 'Nº 001',
+      title: 'Aprender',
+      html: `
+        <div class="modal-section">
+          <h4>Tópicos teóricos</h4>
+          <ul class="modal-list">
+            <li>Casos de Teste</li>
+            <li>Ciclo de Vida do Bug</li>
+            <li>HTTP/APIs</li>
+            <li>OWASP Top 10</li>
+          </ul>
+        </div>
+        <div class="modal-section">
+          <h4>Rotina diária</h4>
+          <p>Reservo um bloco fixo por dia pra estudar teoria: leio documentação, assisto uma aula curta ou resolvo um exercício prático, sempre registrando o que aprendi no Diário de Campo.</p>
+        </div>
+      `
+    },
+    praticar: {
+      no: 'Nº 002',
+      title: 'Praticar',
+      html: `
+        <div class="modal-section">
+          <h4>Técnicas aplicadas</h4>
+          <ul class="modal-list">
+            <li>Testes Exploratórios</li>
+            <li>Validação de Campos</li>
+            <li>Inspeção de Rede no Navegador</li>
+          </ul>
+        </div>
+        <div class="modal-section">
+          <p>Pego sites e projetos pequenos pra testar de verdade: exploro fluxos sem roteiro fixo, valido limites e formatos de campo, e uso a aba de Rede do navegador pra entender o que cada ação dispara por trás da tela.</p>
+        </div>
+      `
+    },
+    evoluir: {
+      no: 'Nº 003',
+      title: 'Evoluir',
+      html: `
+        <div class="modal-section">
+          <h4>Objetivo do portfólio</h4>
+          <p>Este site é o registro público do que estou construindo — cada seção mostra um pedaço real do meu processo, não só um resumo teórico.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Próximos projetos</h4>
+          <p>Quero testar um app real de ponta a ponta, montar uma suíte de testes automatizados com Cypress e escrever um relatório de bugs completo, como um QA faria em um time de verdade.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Aprendizado contínuo</h4>
+          <p>QA não é um destino fixo — a cada espécime catalogado eu entendo um pouco mais sobre como o software falha, e é isso que mantém o laboratório sempre aberto.</p>
+        </div>
+      `
+    }
+  };
+
+  const modalOverlay = document.getElementById('modal-overlay');
+  const modalNo = document.getElementById('modal-no');
+  const modalTitle = document.getElementById('modal-title');
+  const modalBody = document.getElementById('modal-body');
+  const modalCloseBtn = document.getElementById('modal-close');
+  let lastFocusedEl = null;
+
+  function openModal(key) {
+    const data = MODAL_CONTENT[key];
+    if (!data) return;
+    lastFocusedEl = document.activeElement;
+    modalNo.textContent = data.no;
+    modalTitle.textContent = data.title;
+    modalBody.innerHTML = data.html;
+    modalOverlay.classList.add('is-open');
+    document.body.classList.add('modal-open');
+    modalCloseBtn.focus();
+  }
+
+  function closeModal() {
+    modalOverlay.classList.remove('is-open');
+    document.body.classList.remove('modal-open');
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.querySelectorAll('.card[data-modal]').forEach((card) => {
+    card.addEventListener('click', () => openModal(card.dataset.modal));
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openModal(card.dataset.modal);
+      }
+    });
+  });
+
+  modalCloseBtn.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (event) => {
+    if (event.target === modalOverlay) closeModal();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modalOverlay.classList.contains('is-open')) closeModal();
   });
 </script>
 
