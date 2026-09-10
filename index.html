@@ -271,7 +271,17 @@
   .specimen-card__foot{
     margin-top:.2rem;
     display:flex;
+    align-items:center;
     justify-content:flex-end;
+    gap:.6rem;
+  }
+
+  .stage-label{
+    font-family:'Space Mono', monospace;
+    font-size:.6rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
   }
 
   .status-stamp{
@@ -284,9 +294,9 @@
     border-radius:2px;
     transform:rotate(-3deg);
   }
-  .status--capturado{ color:var(--ink-dim); }
-  .status--analise{ color:var(--brass); }
-  .status--corrigido{ color:var(--sage); }
+  .status--deferred{ color:var(--ink-dim); }
+  .status--open{ color:var(--brass); }
+  .status--verified{ color:var(--sage); }
 
   .journal{
     position:relative;
@@ -685,7 +695,8 @@
       <h3>Validação de Formulário</h3>
       <p class="specimen-desc">Campo de e-mail aceita valores sem "@", permitindo cadastros inválidos no banco de dados.</p>
       <div class="specimen-card__foot">
-        <span class="status-stamp status--analise">Em análise</span>
+        <span class="stage-label">Estágio Atual</span>
+        <span class="status-stamp status--open">Open</span>
       </div>
     </div>
 
@@ -698,7 +709,8 @@
       <h3>Broken Link</h3>
       <p class="specimen-desc">Link do rodapé "Sobre" aponta para uma página que não existe (erro 404).</p>
       <div class="specimen-card__foot">
-        <span class="status-stamp status--capturado">Capturado</span>
+        <span class="stage-label">Estágio Atual</span>
+        <span class="status-stamp status--verified">Fixed → Verified</span>
       </div>
     </div>
 
@@ -711,7 +723,8 @@
       <h3>UI Inconsistente</h3>
       <p class="specimen-desc">Botões de "Enviar" usam bordas arredondadas diferentes entre as páginas do site.</p>
       <div class="specimen-card__foot">
-        <span class="status-stamp status--corrigido">Corrigido</span>
+        <span class="stage-label">Estágio Atual</span>
+        <span class="status-stamp status--deferred">Deferred</span>
       </div>
     </div>
   </div>
@@ -961,11 +974,15 @@
       html: `
         <div class="modal-meta">
           <span class="severity severity--alta">Alta</span>
-          <span class="status-stamp status--analise">Em análise</span>
+          <span class="status-stamp status--open">Open</span>
         </div>
         <div class="modal-section">
           <h4>Título do bug</h4>
           <p>Ausência de validação de formato de e-mail no formulário de cadastro.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Por que esse estágio</h4>
+          <p>Esse bug está em <strong>Open</strong> porque, apesar de recém-capturado, a severidade alta — afeta a integridade dos dados de cadastro — empurrou ele direto pra prioridade de correção. Não fazia sentido deixar acumulando em <strong>New</strong> ou <strong>Assigned</strong> quando o impacto técnico já estava claro.</p>
         </div>
         <div class="modal-section">
           <h4>Passos para reproduzir</h4>
@@ -995,11 +1012,15 @@
       html: `
         <div class="modal-meta">
           <span class="severity severity--media">Média</span>
-          <span class="status-stamp status--capturado">Capturado</span>
+          <span class="status-stamp status--verified">Fixed → Verified</span>
         </div>
         <div class="modal-section">
           <h4>Título do bug</h4>
           <p>Link do rodapé direcionando para página inexistente (erro 404).</p>
+        </div>
+        <div class="modal-section">
+          <h4>Por que esse estágio</h4>
+          <p>Simulei aqui o fluxo completo: o desenvolvedor marcou como <strong>Fixed</strong> depois de corrigir o link, e eu, como QA, fiz o <strong>Retest</strong> clicando de novo no link do rodapé — confirmando que ele já aponta pro lugar certo, o bug virou <strong>Verified</strong>.</p>
         </div>
         <div class="modal-section">
           <h4>Passos para reproduzir</h4>
@@ -1028,11 +1049,15 @@
       html: `
         <div class="modal-meta">
           <span class="severity severity--baixa">Baixa</span>
-          <span class="status-stamp status--corrigido">Corrigido</span>
+          <span class="status-stamp status--deferred">Deferred</span>
         </div>
         <div class="modal-section">
           <h4>Título do bug</h4>
           <p>Incompatibilidade de border-radius e estilo de botões entre telas.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Por que esse estágio</h4>
+          <p>Marquei como <strong>Deferred</strong> porque é um bug real, mas de baixo impacto: o site continua funcionando normalmente, só o estilo do botão que destoa. Prioridades como essa entram na fila, mas não furam a frente de bugs que quebram função.</p>
         </div>
         <div class="modal-section">
           <h4>Passos para reproduzir</h4>
