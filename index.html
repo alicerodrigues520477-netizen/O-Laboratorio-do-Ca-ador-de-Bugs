@@ -753,7 +753,16 @@
 
   <p class="catalog-label rise" style="animation-delay:1.22s">Gaveta 04 — Diário de Campo</p>
   <div class="journal">
-    <article class="journal-entry rise" style="animation-delay:1.28s" data-modal="journalBugReport" role="button" tabindex="0" aria-haspopup="dialog">
+    <article class="journal-entry rise" style="animation-delay:1.28s" data-modal="journalBugLifecycle" role="button" tabindex="0" aria-haspopup="dialog">
+      <div class="journal-entry__meta">
+        <time class="journal-date">10 set 2026</time>
+        <span class="tag">#QA</span>
+      </div>
+      <h3>Aula curta: entendendo o ciclo de vida do bug</h3>
+      <p>Estudei o fluxo que um bug percorre depois de encontrado e entendi que "Fixed" não é o fim da história — sou eu, o QA, que fecho o ciclo de verdade testando de novo e confirmando.</p>
+    </article>
+
+    <article class="journal-entry rise" style="animation-delay:1.34s" data-modal="journalBugReport" role="button" tabindex="0" aria-haspopup="dialog">
       <div class="journal-entry__meta">
         <time class="journal-date">28 set 2026</time>
         <span class="tag">#QA</span>
@@ -762,7 +771,7 @@
       <p>Aprendi que um bom report tem passos claros pra reproduzir, comportamento esperado x encontrado, severidade e evidência (print ou log) — sem isso, o dev perde tempo só tentando entender o problema.</p>
     </article>
 
-    <article class="journal-entry rise" style="animation-delay:1.34s" data-modal="journalBoundary" role="button" tabindex="0" aria-haspopup="dialog">
+    <article class="journal-entry rise" style="animation-delay:1.4s" data-modal="journalBoundary" role="button" tabindex="0" aria-haspopup="dialog">
       <div class="journal-entry__meta">
         <time class="journal-date">22 set 2026</time>
         <span class="tag">#TestesManuais</span>
@@ -771,7 +780,7 @@
       <p>Pratiquei testar os extremos de um campo numérico — mínimo, máximo, um valor abaixo e um acima. É nessas bordas que a maioria dos bugs de validação aparece.</p>
     </article>
 
-    <article class="journal-entry rise" style="animation-delay:1.4s" data-modal="journalPriority" role="button" tabindex="0" aria-haspopup="dialog">
+    <article class="journal-entry rise" style="animation-delay:1.46s" data-modal="journalPriority" role="button" tabindex="0" aria-haspopup="dialog">
       <div class="journal-entry__meta">
         <time class="journal-date">16 set 2026</time>
         <span class="tag">#QA</span>
@@ -780,7 +789,7 @@
       <p>Estudei uma matriz simples pra decidir o que corrigir primeiro: bugs de alto impacto e alta frequência sobem pro topo da fila, os de baixo impacto e baixa frequência esperam.</p>
     </article>
 
-    <article class="journal-entry rise" style="animation-delay:1.46s">
+    <article class="journal-entry rise" style="animation-delay:1.52s">
       <div class="journal-entry__meta">
         <time class="journal-date">08 set 2026</time>
         <span class="tag">#TestesManuais</span>
@@ -789,7 +798,7 @@
       <p>Entendi melhor quando vale a pena escrever um teste automatizado e quando um teste exploratório manual encontra mais problemas reais, principalmente em telas novas.</p>
     </article>
 
-    <article class="journal-entry rise" style="animation-delay:1.52s">
+    <article class="journal-entry rise" style="animation-delay:1.58s">
       <div class="journal-entry__meta">
         <time class="journal-date">03 set 2026</time>
         <span class="tag">#Acessibilidade</span>
@@ -798,7 +807,7 @@
       <p>Estudei os princípios POUR e comecei a testar navegação só com teclado — descobri três armadilhas de foco que eu nunca tinha percebido antes.</p>
     </article>
 
-    <article class="journal-entry rise" style="animation-delay:1.58s">
+    <article class="journal-entry rise" style="animation-delay:1.64s">
       <div class="journal-entry__meta">
         <time class="journal-date">28 ago 2026</time>
         <span class="tag">#QA</span>
@@ -808,8 +817,8 @@
     </article>
   </div>
 
-  <p class="catalog-label rise" style="animation-delay:1.64s">Enviar Pista ou Mensagem</p>
-  <div class="contact-card rise" style="animation-delay:1.7s">
+  <p class="catalog-label rise" style="animation-delay:1.7s">Enviar Pista ou Mensagem</p>
+  <div class="contact-card rise" style="animation-delay:1.76s">
     <span class="pin"></span>
     <p class="contact-note">Achou um bug, tem uma sugestão ou quer trocar uma ideia? Deixe sua pista abaixo.</p>
     <form class="contact-form" id="contact-form" action="https://formspree.io/f/xkjnplwg" method="POST">
@@ -898,7 +907,19 @@
       html: `
         <div class="modal-section">
           <h4>Tópicos teóricos</h4>
-          <p>Estudo como escrever bons <strong>casos de teste</strong>, entendo o <strong>ciclo de vida do bug</strong> desde a captura até a correção, aprofundo meus conhecimentos em <strong>HTTP e APIs</strong> pra saber ler uma requisição de verdade, e reviso o <strong>OWASP Top 10</strong> pra reconhecer as vulnerabilidades mais comuns.</p>
+          <p>Estudo como escrever bons <strong>casos de teste</strong>, aprofundo meus conhecimentos em <strong>HTTP e APIs</strong> pra saber ler uma requisição de verdade, e reviso o <strong>OWASP Top 10</strong> pra reconhecer as vulnerabilidades mais comuns.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Ciclo de vida do bug</h4>
+          <p>Estudei o caminho completo que um bug percorre depois de encontrado. Ele nasce como <strong>New</strong> — acabou de ser registrado e ainda não foi analisado por ninguém — e vira <strong>Assigned</strong> quando um líder de QA confirma que é um bug de verdade e atribui a um desenvolvedor. A partir daí entra em <strong>Open</strong>, o estágio em que o dev está analisando e trabalhando na correção. Quando termina, o status muda pra <strong>Fixed</strong> — mas isso não significa "resolvido", e sim "eu acho que resolvi, agora o QA precisa confirmar". É aí que entra o <strong>Retest</strong> (ou Pending Retest): eu, como QA, testo de novo pra ver se o problema realmente sumiu. Se confirmar, o bug vira <strong>Verified</strong> e só então chega em <strong>Closed</strong>, o fim oficial do ciclo. Mas se eu testar de novo e o bug ainda estiver lá, ele volta pro desenvolvedor como <strong>Reopened</strong>.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Estados alternativos</h4>
+          <p>Nem todo bug segue esse caminho reto. Uso <strong>Deferred</strong> quando é um bug real mas foi adiado pra outra versão, <strong>Rejected</strong> quando não é considerado um bug de fato, <strong>Duplicate</strong> quando já tinha sido reportado antes, e <strong>Not a Bug</strong> quando o comportamento é o esperado, mesmo parecendo estranho à primeira vista.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Severidade e prioridade</h4>
+          <p>Dois conceitos andam junto com esse ciclo: <strong>severidade</strong>, que mede o quanto o bug quebra o sistema tecnicamente, e <strong>prioridade</strong>, que mede a urgência de corrigi-lo agora. Um bug pode ter severidade alta mas prioridade baixa — quebra algo importante, mas numa função que quase ninguém usa — e é essa combinação que ajuda a decidir o que corrigir primeiro.</p>
         </div>
         <div class="modal-section">
           <h4>Rotina diária</h4>
@@ -1087,6 +1108,28 @@
         <div class="modal-section">
           <h4>Como utilizo</h4>
           <p>Registro de reports de bugs detalhados, acompanhamento do ciclo de vida das falhas e organização de tarefas de teste em quadros Kanban/Scrum.</p>
+        </div>
+      `
+    },
+    journalBugLifecycle: {
+      no: '10 set 2026',
+      title: 'Aula curta: entendendo o ciclo de vida do bug',
+      html: `
+        <div class="modal-section">
+          <h4>O que estudei hoje</h4>
+          <p>Hoje estudei o fluxo que um bug percorre depois de ser encontrado. A parte que mais me chamou atenção foi que <strong>Fixed</strong> (corrigido) não é o fim da história — é só o desenvolvedor dizendo "acho que resolvi". Quem fecha o ciclo de verdade sou eu, o QA, testando de novo (<strong>Retest</strong>) e confirmando (<strong>Verified</strong>).</p>
+        </div>
+        <div class="modal-section">
+          <h4>Severidade x prioridade</h4>
+          <p>Também entendi a diferença entre <strong>severidade</strong> e <strong>prioridade</strong>, que eu confundia. Severidade é sobre o impacto técnico (quebra o sistema ou não?), prioridade é sobre urgência de negócio (precisa ser resolvido agora ou pode esperar?). Um bug feio visualmente pode ter prioridade alta numa página de vendas, mesmo com severidade técnica baixa.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Minha dúvida prática</h4>
+          <p>Fiquei com uma dúvida prática: como decidir sozinha, sem uma equipe, se um bug que eu mesma encontro deveria ser <strong>Deferred</strong> ou <strong>Rejected</strong>? Vou usar isso como critério ao catalogar os próximos espécimes do site: perguntar sempre "isso quebra uma função, ou é só um comportamento que eu esperava diferente?" antes de classificar.</p>
+        </div>
+        <div class="modal-section">
+          <h4>Próximo passo</h4>
+          <p>Aplicar esse fluxo nos bugs já catalogados na <strong>Gaveta 02</strong>, marcando mentalmente em que estágio cada um estaria hoje.</p>
         </div>
       `
     },
