@@ -578,27 +578,9 @@
     color:var(--ink);
     margin:0;
   }
-
-  .modal-list{
-    list-style:none;
-    margin:0;
-    padding:0;
-    display:flex;
-    flex-direction:column;
-    gap:.55rem;
-  }
-  .modal-list li{
-    position:relative;
-    padding-left:1.3rem;
-    font-size:.94rem;
-    line-height:1.6;
-    color:var(--ink);
-  }
-  .modal-list li::before{
-    content:"—";
-    position:absolute;
-    left:0;
-    color:var(--brass);
+  .modal-section p strong{
+    color:var(--brass-bright);
+    font-weight:600;
   }
 
   .modal-steps{
@@ -916,12 +898,7 @@
       html: `
         <div class="modal-section">
           <h4>Tópicos teóricos</h4>
-          <ul class="modal-list">
-            <li>Casos de Teste</li>
-            <li>Ciclo de Vida do Bug</li>
-            <li>HTTP/APIs</li>
-            <li>OWASP Top 10</li>
-          </ul>
+          <p>Estudo como escrever bons <strong>casos de teste</strong>, entendo o <strong>ciclo de vida do bug</strong> desde a captura até a correção, aprofundo meus conhecimentos em <strong>HTTP e APIs</strong> pra saber ler uma requisição de verdade, e reviso o <strong>OWASP Top 10</strong> pra reconhecer as vulnerabilidades mais comuns.</p>
         </div>
         <div class="modal-section">
           <h4>Rotina diária</h4>
@@ -935,14 +912,7 @@
       html: `
         <div class="modal-section">
           <h4>Técnicas aplicadas</h4>
-          <ul class="modal-list">
-            <li>Testes Exploratórios</li>
-            <li>Validação de Campos</li>
-            <li>Inspeção de Rede no Navegador</li>
-          </ul>
-        </div>
-        <div class="modal-section">
-          <p>Pego sites e projetos pequenos pra testar de verdade: exploro fluxos sem roteiro fixo, valido limites e formatos de campo, e uso a aba de Rede do navegador pra entender o que cada ação dispara por trás da tela.</p>
+          <p>Pego sites e projetos pequenos pra testar de verdade: aplico <strong>testes exploratórios</strong> pra percorrer fluxos sem roteiro fixo, faço <strong>validação de formulários</strong> testando limites e formatos de campo, e recorro à <strong>inspeção de rede</strong> no navegador pra entender o que cada ação dispara por trás da tela.</p>
         </div>
       `
     },
