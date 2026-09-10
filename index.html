@@ -6,19 +6,23 @@
 <title>Laboratório do Caçador de Bugs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Work+Sans:wght@400;500&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="glyph-field.css">
+<script src="glyph-field.js" defer></script>
 <style>
   :root{
-    --drawer:#23241f;
-    --tray:#2c2e26;
-    --tray-border:#4a4c3c;
-    --brass:#c9a24a;
-    --brass-bright:#e6c979;
-    --paper:#eee6d3;
-    --ink:#cfc9b8;
-    --ink-dim:#938f7c;
-    --rust:#a1522c;
-    --sage:#7c8f6e;
+    --drawer:#05070c;
+    --tray:#0b101d;
+    --tray-border:#1e2b44;
+    --brass:#4dd8ff;
+    --brass-bright:#8be9ff;
+    --paper:#eef3ff;
+    --ink:#c7d3ef;
+    --ink-dim:#6f7c9c;
+    --rust:#ff2f5e;
+    --sage:#39ff8c;
+    --glyph-field-cold: var(--brass);
+    --glyph-field-hot: var(--rust);
   }
 
   *{box-sizing:border-box;}
@@ -28,18 +32,23 @@
     background:
       repeating-linear-gradient(
         0deg,
-        rgba(0,0,0,0.05) 0px,
-        rgba(0,0,0,0.05) 1px,
+        rgba(77,216,255,0.025) 0px,
+        rgba(77,216,255,0.025) 1px,
         transparent 1px,
         transparent 3px
       ),
-      radial-gradient(ellipse at 50% -10%, #2c2d26 0%, var(--drawer) 55%);
+      radial-gradient(ellipse at 50% -10%, #0d1424 0%, var(--drawer) 60%);
     color:var(--ink);
     font-family:'Work Sans', system-ui, sans-serif;
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
   }
   body.modal-open{ overflow:hidden; }
+
+  .site{
+    position:relative;
+    z-index:1;
+  }
 
   @media (prefers-reduced-motion: no-preference){
     .rise{
@@ -79,7 +88,7 @@
   }
 
   h1{
-    font-family:'Fraunces', Georgia, serif;
+    font-family:'Chakra Petch', 'Segoe UI', sans-serif;
     font-weight:600;
     font-size:clamp(2.1rem, 6vw, 3.4rem);
     color:var(--paper);
@@ -89,7 +98,7 @@
   }
 
   .tagline{
-    font-family:'Fraunces', Georgia, serif;
+    font-family:'Chakra Petch', 'Segoe UI', sans-serif;
     font-style:italic;
     font-weight:500;
     font-size:1.15rem;
@@ -178,7 +187,7 @@
   }
 
   .card h3{
-    font-family:'Fraunces', Georgia, serif;
+    font-family:'Chakra Petch', 'Segoe UI', sans-serif;
     font-weight:600;
     font-size:1.3rem;
     color:var(--paper);
@@ -245,7 +254,7 @@
   .severity--baixa{ color:var(--sage); }
 
   .specimen-card h3{
-    font-family:'Fraunces', Georgia, serif;
+    font-family:'Chakra Petch', 'Segoe UI', sans-serif;
     font-weight:600;
     font-size:1.15rem;
     color:var(--paper);
@@ -332,7 +341,7 @@
   }
 
   .journal-entry h3{
-    font-family:'Fraunces', Georgia, serif;
+    font-family:'Chakra Petch', 'Segoe UI', sans-serif;
     font-weight:600;
     font-size:1.15rem;
     color:var(--paper);
@@ -542,7 +551,7 @@
   }
 
   .modal h2{
-    font-family:'Fraunces', Georgia, serif;
+    font-family:'Chakra Petch', 'Segoe UI', sans-serif;
     font-weight:600;
     font-size:1.6rem;
     color:var(--paper);
@@ -640,6 +649,10 @@
 </style>
 </head>
 <body>
+
+<canvas data-glyph-field aria-hidden="true"></canvas>
+
+<div class="site">
 
 <header>
   <div class="pin rise" style="animation-delay:.05s"></div>
@@ -1219,6 +1232,8 @@
   <div class="pin"></div>
   <p>&copy; 2026 <strong>Laboratório do Caçador de Bugs</strong> — catalogado no GitHub Pages</p>
 </footer>
+
+</div>
 
 </body>
 </html>
