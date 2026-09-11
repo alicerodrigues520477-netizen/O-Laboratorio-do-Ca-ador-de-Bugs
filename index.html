@@ -626,6 +626,31 @@
     margin-bottom:1.4rem;
   }
 
+  .modal-glossary{
+    margin:0;
+    padding:0;
+  }
+  .modal-glossary dt{
+    font-family:'Chakra Petch', 'Segoe UI', sans-serif;
+    font-weight:600;
+    font-size:.98rem;
+    color:var(--brass-bright);
+    margin:1.1rem 0 0;
+    padding-top:1.1rem;
+    border-top:1px dashed var(--tray-border);
+  }
+  .modal-glossary dt:first-child{
+    margin-top:0;
+    padding-top:0;
+    border-top:none;
+  }
+  .modal-glossary dd{
+    font-size:.9rem;
+    line-height:1.6;
+    color:var(--ink);
+    margin:.35rem 0 0;
+  }
+
   footer{
     text-align:center;
     padding:2.5rem 1.5rem 3rem;
@@ -830,8 +855,91 @@
     </article>
   </div>
 
-  <p class="catalog-label rise" style="animation-delay:1.7s">Enviar Pista ou Mensagem</p>
-  <div class="contact-card rise" style="animation-delay:1.76s">
+  <p class="catalog-label rise" style="animation-delay:1.7s">Gaveta 05 — Glossário Técnico de QA</p>
+  <div class="cards">
+    <div class="specimen-card rise" style="animation-delay:1.76s" data-modal="glossary011" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 011</div>
+      <h3>Testes — Tipos e Níveis</h3>
+      <span class="tag">Parte 1 · PT</span>
+      <p class="specimen-desc">Do teste unitário ao teste de carga: os principais tipos e níveis de teste usados no dia a dia de QA.</p>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:1.82s" data-modal="glossary012" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 012</div>
+      <h3>Metodologia e Processo</h3>
+      <span class="tag">Parte 1 · PT</span>
+      <p class="specimen-desc">Casos de teste, plano de testes, cobertura e rastreabilidade — o vocabulário de processo do QA.</p>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:1.88s" data-modal="glossary013" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 013</div>
+      <h3>Automação</h3>
+      <span class="tag">Parte 1 · PT</span>
+      <p class="specimen-desc">Frameworks, pipelines e CI/CD: os termos por trás dos testes automatizados.</p>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:1.94s" data-modal="glossary014" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 014</div>
+      <h3>API e Sistemas</h3>
+      <span class="tag">Parte 1 · PT</span>
+      <p class="specimen-desc">API, endpoint e mock/stub — o essencial pra testar a comunicação entre sistemas.</p>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:2s" data-modal="glossary015" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 015</div>
+      <h3>Ambientes</h3>
+      <span class="tag">Parte 1 · PT</span>
+      <p class="specimen-desc">Homologação, staging e sprint: onde e quando os testes acontecem.</p>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:2.06s" data-modal="glossary016" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 016</div>
+      <h3>Testes</h3>
+      <span class="tag">Parte 2 · EN</span>
+      <p class="specimen-desc">Bug, issue, edge case, happy path: o vocabulário em inglês que todo QA usa no dia a dia.</p>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:2.12s" data-modal="glossary017" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 017</div>
+      <h3>Processo e Ciclo de Vida</h3>
+      <span class="tag">Parte 2 · EN</span>
+      <p class="specimen-desc">Backlog, sprint, Definition of Done e hotfix — os termos de processo em inglês.</p>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:2.18s" data-modal="glossary018" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 018</div>
+      <h3>Ambientes e Deploy</h3>
+      <span class="tag">Parte 2 · EN</span>
+      <p class="specimen-desc">Staging, production, deploy e build — o caminho de uma versão até o ar.</p>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:2.24s" data-modal="glossary019" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 019</div>
+      <h3>API e Dados</h3>
+      <span class="tag">Parte 2 · EN</span>
+      <p class="specimen-desc">Request, response, payload e status code — a linguagem por trás de cada requisição.</p>
+    </div>
+
+    <div class="specimen-card rise" style="animation-delay:2.3s" data-modal="glossary020" role="button" tabindex="0" aria-haspopup="dialog">
+      <span class="pin"></span>
+      <div class="specimen-no">Nº 020</div>
+      <h3>Automação</h3>
+      <span class="tag">Parte 2 · EN</span>
+      <p class="specimen-desc">Framework, assertion, test runner e flaky test — o vocabulário de quem escreve testes automatizados.</p>
+    </div>
+  </div>
+
+  <p class="catalog-label rise" style="animation-delay:2.36s">Enviar Pista ou Mensagem</p>
+  <div class="contact-card rise" style="animation-delay:2.42s">
     <span class="pin"></span>
     <p class="contact-note">Achou um bug, tem uma sugestão ou quer trocar uma ideia? Deixe sua pista abaixo.</p>
     <form class="contact-form" id="contact-form" action="https://formspree.io/f/xkjnplwg" method="POST">
@@ -1217,6 +1325,214 @@
         <div class="modal-section">
           <h4>Por que ajuda o time</h4>
           <p>Uma matriz simples tira a decisão do "achismo" e dá à equipe de desenvolvimento um critério objetivo pra decidir o que corrigir primeiro quando a lista de bugs é maior que o tempo disponível.</p>
+        </div>
+      `
+    },
+    glossary011: {
+      no: 'Nº 011',
+      title: 'Testes — Tipos e Níveis',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>Teste Unitário</dt>
+            <dd>Verifica uma unidade isolada de código (função/método), geralmente feito pelo próprio desenvolvedor.</dd>
+            <dt>Teste de Integração</dt>
+            <dd>Valida a comunicação entre módulos ou sistemas diferentes.</dd>
+            <dt>Teste de Sistema</dt>
+            <dd>Avalia o sistema completo, de ponta a ponta, contra os requisitos definidos.</dd>
+            <dt>Teste de Aceitação (UAT)</dt>
+            <dd>Validação final feita pelo cliente/usuário para confirmar que o sistema atende às necessidades do negócio.</dd>
+            <dt>Teste de Regressão</dt>
+            <dd>Repete testes já feitos para garantir que novas alterações não quebraram funcionalidades existentes.</dd>
+            <dt>Teste de Fumaça (Smoke Test)</dt>
+            <dd>Verificação rápida e superficial para confirmar que a build está estável o suficiente para testes mais profundos.</dd>
+            <dt>Teste Exploratório</dt>
+            <dd>Testes sem script fixo, guiados pela intuição e experiência do testador.</dd>
+            <dt>Teste de Carga/Performance</dt>
+            <dd>Mede o comportamento do sistema sob determinado volume de uso ou stress.</dd>
+          </dl>
+        </div>
+      `
+    },
+    glossary012: {
+      no: 'Nº 012',
+      title: 'Metodologia e Processo',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>Caso de Teste (Test Case)</dt>
+            <dd>Documento que descreve passos, dados de entrada e resultado esperado para validar um cenário específico.</dd>
+            <dt>Plano de Testes</dt>
+            <dd>Documento estratégico que define escopo, abordagem, recursos e cronograma dos testes.</dd>
+            <dt>Bug/Defeito</dt>
+            <dd>Comportamento do sistema que diverge do esperado.</dd>
+            <dt>Critérios de Aceitação</dt>
+            <dd>Condições que devem ser cumpridas para uma funcionalidade ser considerada "pronta".</dd>
+            <dt>Cobertura de Testes (Test Coverage)</dt>
+            <dd>Percentual do código ou dos requisitos efetivamente testado.</dd>
+            <dt>Rastreabilidade</dt>
+            <dd>Capacidade de ligar requisitos a casos de teste e defeitos, garantindo que nada fique sem cobertura.</dd>
+          </dl>
+        </div>
+      `
+    },
+    glossary013: {
+      no: 'Nº 013',
+      title: 'Automação',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>Teste Automatizado</dt>
+            <dd>Execução de testes por scripts, sem intervenção manual.</dd>
+            <dt>Framework de Automação</dt>
+            <dd>Estrutura (ex: Selenium, Cypress, Playwright) usada para construir e organizar testes automatizados.</dd>
+            <dt>CI/CD (Integração/Entrega Contínua)</dt>
+            <dd>Prática de integrar e testar código frequentemente, automatizando o caminho até produção.</dd>
+            <dt>Pipeline</dt>
+            <dd>Sequência automatizada de etapas (build, teste, deploy) executada a cada alteração de código.</dd>
+          </dl>
+        </div>
+      `
+    },
+    glossary014: {
+      no: 'Nº 014',
+      title: 'API e Sistemas',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>API (Interface de Programação de Aplicações)</dt>
+            <dd>Conjunto de regras que permite a comunicação entre sistemas.</dd>
+            <dt>Endpoint</dt>
+            <dd>URL específica de uma API que recebe requisições.</dd>
+            <dt>Mock/Stub</dt>
+            <dd>Simulação de um componente real, usada para isolar o que está sendo testado.</dd>
+          </dl>
+        </div>
+      `
+    },
+    glossary015: {
+      no: 'Nº 015',
+      title: 'Ambientes',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>Ambiente de Homologação/Staging</dt>
+            <dd>Réplica do ambiente de produção usada para testes finais antes do lançamento.</dd>
+            <dt>Sprint</dt>
+            <dd>Ciclo curto de trabalho (geralmente em Scrum) onde funcionalidades são desenvolvidas e testadas.</dd>
+          </dl>
+        </div>
+      `
+    },
+    glossary016: {
+      no: 'Nº 016',
+      title: 'Testes',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>Bug</dt>
+            <dd>Erro ou falha no sistema.</dd>
+            <dt>Issue</dt>
+            <dd>Termo mais amplo que "bug" — pode ser um defeito, uma melhoria ou uma tarefa pendente.</dd>
+            <dt>Feature</dt>
+            <dd>Funcionalidade do sistema.</dd>
+            <dt>Requirement</dt>
+            <dd>Requisito — o que o sistema deve fazer.</dd>
+            <dt>Edge case</dt>
+            <dd>Cenário extremo ou incomum, nos limites do que o sistema foi projetado para lidar.</dd>
+            <dt>Corner case</dt>
+            <dd>Parecido com edge case, mas envolve a combinação de múltiplas condições extremas ao mesmo tempo.</dd>
+            <dt>Happy path</dt>
+            <dd>Fluxo "ideal", sem erros, em que tudo corre como esperado.</dd>
+            <dt>Sanity check</dt>
+            <dd>Verificação rápida para confirmar que uma correção específica funcionou, sem testar tudo de novo.</dd>
+            <dt>Regression</dt>
+            <dd>Quando uma alteração nova quebra algo que já funcionava antes.</dd>
+            <dt>Workaround</dt>
+            <dd>Solução temporária para contornar um problema sem corrigi-lo de vez.</dd>
+          </dl>
+        </div>
+      `
+    },
+    glossary017: {
+      no: 'Nº 017',
+      title: 'Processo e Ciclo de Vida',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>Backlog</dt>
+            <dd>Lista de tarefas, funcionalidades ou bugs pendentes de tratamento.</dd>
+            <dt>Sprint</dt>
+            <dd>Ciclo de trabalho curto (comum em Scrum).</dd>
+            <dt>Story/User story</dt>
+            <dd>Descrição de uma funcionalidade do ponto de vista do usuário.</dd>
+            <dt>Acceptance criteria</dt>
+            <dd>Condições que definem quando uma tarefa está "pronta".</dd>
+            <dt>Definition of Done (DoD)</dt>
+            <dd>Critério combinado pela equipe para considerar qualquer entrega concluída.</dd>
+            <dt>Release</dt>
+            <dd>Lançamento de uma nova versão do sistema.</dd>
+            <dt>Rollback</dt>
+            <dd>Reverter o sistema para uma versão anterior após um problema.</dd>
+            <dt>Hotfix</dt>
+            <dd>Correção urgente aplicada diretamente em produção.</dd>
+          </dl>
+        </div>
+      `
+    },
+    glossary018: {
+      no: 'Nº 018',
+      title: 'Ambientes e Deploy',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>Staging</dt>
+            <dd>Ambiente de testes que simula produção.</dd>
+            <dt>Production (Prod)</dt>
+            <dd>Ambiente real, usado pelos usuários finais.</dd>
+            <dt>Deploy/Deployment</dt>
+            <dd>Processo de colocar uma versão do sistema no ar.</dd>
+            <dt>Build</dt>
+            <dd>Versão compilada/empacotada do sistema, pronta para ser testada ou lançada.</dd>
+          </dl>
+        </div>
+      `
+    },
+    glossary019: {
+      no: 'Nº 019',
+      title: 'API e Dados',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>Request/Response</dt>
+            <dd>Pedido enviado e resposta recebida numa comunicação (ex: entre cliente e servidor).</dd>
+            <dt>Payload</dt>
+            <dd>Os dados efetivamente enviados numa requisição.</dd>
+            <dt>Status code</dt>
+            <dd>Código numérico que indica o resultado de uma requisição HTTP (ex: 200 = sucesso, 404 = não encontrado, 500 = erro no servidor).</dd>
+            <dt>Mock/Stub</dt>
+            <dd>Simulação de um componente real usado para isolar testes.</dd>
+            <dt>Endpoint</dt>
+            <dd>URL específica onde uma API recebe requisições.</dd>
+          </dl>
+        </div>
+      `
+    },
+    glossary020: {
+      no: 'Nº 020',
+      title: 'Automação',
+      html: `
+        <div class="modal-section">
+          <dl class="modal-glossary">
+            <dt>Framework</dt>
+            <dd>Estrutura usada para organizar e executar testes.</dd>
+            <dt>Assertion</dt>
+            <dd>Instrução dentro de um teste que verifica se um resultado é o esperado.</dd>
+            <dt>Test runner</dt>
+            <dd>Ferramenta que executa os testes automatizados.</dd>
+            <dt>Flaky test</dt>
+            <dd>Teste instável, que às vezes passa e às vezes falha sem mudanças no código.</dd>
+          </dl>
         </div>
       `
     }
