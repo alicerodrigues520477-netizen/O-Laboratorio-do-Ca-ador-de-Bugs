@@ -15,7 +15,8 @@ relê a conversa inteira e gasta bem mais do limite.
 1. Chame `get_session` sem `session_id` para saber o ID desta sessão.
 2. Chame `list_sessions` (servidor `Claude_Code_Remote`) com `mine: true` e
    `limit: 8`. Carregue a ferramenta com ToolSearch se ela não estiver disponível.
-3. Para cada sessão, calcule `restante = updated_at + 60 min − agora`:
+3. Ignore sessões com `session_status` `SESSION_STATUS_ARCHIVED`. Para cada
+   uma das demais, calcule `restante = updated_at + 60 min − agora`:
    - `status_bucket` terminando em `WORKING` → **trabalhando** (cache sendo renovado);
    - `restante > 15 min` → 🟢;
    - `5 min < restante ≤ 15 min` → 🟡;
