@@ -29,8 +29,11 @@ const saveSettings = () => store.set('lv:settings', S);
 const DB = (() => {
   let dbp;
   const open = () => dbp || (dbp = new Promise((res, rej) => {
-    const r = indexedDB.open('livro-em-voz', 1);
-    r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('books', { keyPath: 'id' }); d.createObjectStore('audio', { keyPath: 'id' }); };
+    const r = indexedDB.open('livro-em-voz', 2);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      for (const name of ['books', 'audio', 'covers']) if (!d.objectStoreNames.contains(name)) d.createObjectStore(name, { keyPath: 'id' });
+    };
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
   }));
@@ -178,6 +181,18 @@ async function parseEpub(buf, fname) {
     }
   } catch { /* sumário é opcional */ }
 
+  // capa (EPUB3 "cover-image" ou EPUB2 <meta name="cover">)
+  let cover = null;
+  try {
+    let item = Object.values(manifest).find(m => m.props.split(/\s+/).includes('cover-image'));
+    if (!item) {
+      const mc = [...opf.getElementsByTagNameNS('*', 'meta')].find(m => m.getAttribute('name') === 'cover');
+      item = mc && manifest[mc.getAttribute('content')];
+    }
+    const f = item && zip.file(resolvePath(base, item.href));
+    if (f) cover = await shrinkCover(new Blob([await f.async('arraybuffer')]));
+  } catch { /* sem capa: usa a capa desenhada */ }
+
   const chapters = [];
   let n = 0;
   for (const id of spine) {
@@ -193,7 +208,18 @@ async function parseEpub(buf, fname) {
     ch.title = labels[path] || (h && h.textContent.replace(/\s+/g, ' ').trim()) || ('Seção ' + n);
     chapters.push(ch);
   }
-  return { title: meta('title') || fname.replace(/\.epub$/i, ''), author: meta('creator'), chapters };
+  return { title: meta('title') || fname.replace(/\.epub$/i, ''), author: meta('creator'), chapters, cover };
+}
+
+/** Reduz a imagem da capa para ~260×390 (JPEG) para caber folgado no armazenamento. */
+async function shrinkCover(blob) {
+  const bmp = await createImageBitmap(blob);
+  const W = 260, H = 390, scale = Math.max(W / bmp.width, H / bmp.height);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.drawImage(bmp, (W - bmp.width * scale) / 2, (H - bmp.height * scale) / 2, bmp.width * scale, bmp.height * scale);
+  bmp.close && bmp.close();
+  return c.toDataURL('image/jpeg', 0.78);
 }
 
 function parseTxt(text, fname) {
@@ -226,15 +252,17 @@ function parseTxt(text, fname) {
 function paragraphsToChapter(title, paras) {
   const d = el('div');
   d.append(el('h2', null, title));
-  for (const p of paras) d.append(el('p', null, p));
+  for (const p of paras) d.append(p.startsWith('## ') ? el('h3', null, p.slice(3)) : el('p', null, p));
   return chapterRecord(title, d);
 }
 
 async function saveBook(book) {
+  const cover = book.cover; delete book.cover;
   await DB.put('books', book);
+  if (cover) { await DB.put('covers', { id: book.id, url: cover }); coverCache.set(book.id, cover); }
   const chars = book.chapters.reduce((a, c) => a + c.chars, 0);
   lib = lib.filter(b => b.id !== book.id);
-  lib.unshift({ id: book.id, title: book.title, author: book.author, chapters: book.chapters.length, chars, added: Date.now() });
+  lib.unshift({ id: book.id, title: book.title, author: book.author, level: book.level || '', hue: book.hue, chapters: book.chapters.length, chars, added: Date.now() });
   saveLib();
 }
 
@@ -261,34 +289,129 @@ function showView(name) { for (const [k, v] of Object.entries(views)) v.hidden =
 
 function hueOf(s) { let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; }
 
+const coverCache = new Map();   // id -> dataURL da capa real (EPUB)
+
+/** Monta a capa de um livro: capa desenhada (com moldura dourada) ou imagem real quando existir. */
+function buildCover(b, tag = 'button') {
+  const open = el(tag, 'cover'); if (tag === 'button') open.type = 'button';
+  open.dataset.id = b.id;
+  const h = b.hue != null ? b.hue : hueOf(b.title);
+  open.style.background = `linear-gradient(160deg, hsl(${h} 42% 34%), hsl(${(h + 30) % 360} 48% 17%))`;
+  const top = el('div'); top.append(el('div', 't', b.title), el('div', 'orn'));
+  open.append(el('div', 'mono', (b.title.match(/[A-Za-zÀ-ÿ]/) || ['·'])[0].toUpperCase()), top, el('div', 'a', b.author || ''));
+  if (b.level) { open.append(el('span', 'badge', b.level)); open.classList.add('lv'); }
+  open.setAttribute('aria-label', b.title);
+  if (coverCache.get(b.id)) applyCover(open, coverCache.get(b.id));
+  return open;
+}
+function applyCover(node, url) {
+  node.classList.add('img');
+  node.style.backgroundImage = `url("${url}")`;
+  node.style.backgroundSize = 'cover'; node.style.backgroundPosition = 'center';
+}
+/** Busca no IndexedDB as capas que ainda não estão na memória e aplica nas capas já desenhadas. */
+async function hydrateCovers() {
+  for (const node of $$('.cover[data-id]')) {
+    const id = node.dataset.id;
+    if (node.classList.contains('img') || id.startsWith('cat-')) continue;
+    if (!coverCache.has(id)) {
+      try { const rec = await DB.get('covers', id); coverCache.set(id, rec ? rec.url : null); } catch { coverCache.set(id, null); }
+    }
+    if (coverCache.get(id)) $$(`.cover[data-id="${id}"]`).forEach(n => applyCover(n, coverCache.get(id)));
+  }
+}
+
+const COVER_W = 176, SHELF_GAP = 30, CASE_PAD = 34;
+
 function renderShelf() {
   const shelf = $('#shelf'); shelf.replaceChildren();
-  if (!lib.length) shelf.append(el('p', 'empty-note', 'Nenhum livro ainda. Toque em “Adicionar livro”.'));
-  for (const b of lib) {
-    const card = el('div', 'card');
-    const open = el('button', 'cover'); open.type = 'button';
-    const h = hueOf(b.title);
-    open.style.background = `linear-gradient(160deg, hsl(${h} 42% 34%), hsl(${(h + 30) % 360} 48% 17%))`;
-    const top = el('div'); top.append(el('div', 't', b.title), el('div', 'orn'));
-    open.append(el('div', 'mono', (b.title.match(/[A-Za-zÀ-ÿ]/) || ['·'])[0].toUpperCase()), top, el('div', 'a', b.author || ''));
-    open.addEventListener('click', () => openBook(b.id));
-    const del = el('button', 'del', '✕'); del.type = 'button'; del.setAttribute('aria-label', 'Remover ' + b.title);
-    del.addEventListener('click', async e => {
-      e.stopPropagation();
-      if (!confirm('Remover “' + b.title + '” da biblioteca?')) return;
-      await DB.del('books', b.id); await DB.del('audio', b.id).catch(() => {});
-      lib = lib.filter(x => x.id !== b.id); saveLib();
-      store.del('lv:pos:' + b.id); store.del('lv:pct:' + b.id); store.del('lv:apos:' + b.id);
-      if (b.id === SAMPLE.id) store.set('lv:sample-removed', true);
-      renderShelf();
-    });
-    const pct = Math.round((store.get('lv:pct:' + b.id, 0)) * 100);
-    const prog = el('div', 'prog'); const bar = el('i'); bar.style.width = pct + '%'; prog.append(bar);
-    const meta = el('div', 'meta'); meta.append(el('span', null, pct ? pct + '% lido' : 'Novo'), el('span', null, b.chapters + ' cap.'));
-    const slot = el('div', 'slot'); slot.append(open);
-    card.append(slot, del, prog, meta);
-    shelf.append(card);
+  renderHero();
+  if (!lib.length) { shelf.append(el('p', 'empty-note', 'A estante está vazia. Adicione um livro ou escolha um dos livros grátis logo abaixo.')); renderCatalog(); return; }
+  const inner = Math.max(COVER_W, (shelf.clientWidth || innerWidth - 56) - 2 * CASE_PAD);
+  const cols = Math.max(1, Math.floor((inner + SHELF_GAP) / (COVER_W + SHELF_GAP)));
+  for (let i = 0; i < lib.length; i += cols) {
+    const row = el('div', 'shelf-row');
+    for (const b of lib.slice(i, i + cols)) row.append(shelfCard(b));
+    shelf.append(row);
   }
+  hydrateCovers();
+  renderCatalog();
+}
+
+function shelfCard(b) {
+  const card = el('div', 'card');
+  const open = buildCover(b);
+  open.addEventListener('click', () => openBook(b.id));
+  const del = el('button', 'del', '✕'); del.type = 'button'; del.setAttribute('aria-label', 'Remover ' + b.title);
+  del.addEventListener('click', async e => {
+    e.stopPropagation();
+    if (!confirm('Remover “' + b.title + '” da estante?')) return;
+    await DB.del('books', b.id); await DB.del('audio', b.id).catch(() => {}); await DB.del('covers', b.id).catch(() => {}); coverCache.delete(b.id);
+    lib = lib.filter(x => x.id !== b.id); saveLib();
+    store.del('lv:pos:' + b.id); store.del('lv:pct:' + b.id); store.del('lv:apos:' + b.id);
+    if (b.id === SAMPLE.id) store.set('lv:sample-removed', true);
+    renderShelf();
+  });
+  const pct = Math.round((store.get('lv:pct:' + b.id, 0)) * 100);
+  const prog = el('div', 'prog'); const bar = el('i'); bar.style.width = pct + '%'; prog.append(bar);
+  const meta = el('div', 'meta'); meta.append(el('span', null, pct ? pct + '% lido' : 'Novo'), el('span', null, b.chapters + ' cap.'));
+  card.append(open, del, el('div', 'info'));
+  $('.info', card).append(prog, meta);
+  return card;
+}
+
+/** "Continuar lendo": o último livro aberto. */
+function renderHero() {
+  const hero = $('#hero'); hero.replaceChildren();
+  const last = lib.find(b => b.id === store.get('lv:last', ''));
+  hero.hidden = !last;
+  if (!last) return;
+  const pct = Math.round(store.get('lv:pct:' + last.id, 0) * 100);
+  const cover = buildCover(last); cover.addEventListener('click', () => openBook(last.id));
+  const txt = el('div', 'hero-txt');
+  txt.append(el('span', 'kicker', 'Continuar lendo'), el('h2', null, last.title), el('p', 'by', last.author || ''));
+  const prog = el('div', 'prog'); const bar = el('i'); bar.style.width = pct + '%'; prog.append(bar);
+  const go = el('button', 'btn primary', pct > 0 ? 'Continuar de onde parei' : 'Começar a ler'); go.type = 'button';
+  go.addEventListener('click', () => openBook(last.id));
+  txt.append(prog, el('p', 'pct', pct ? pct + '% lido' : 'Ainda não começou'), go);
+  hero.append(cover, txt);
+}
+
+/* ================= catálogo de livros grátis ================= */
+let catalog = null;
+async function loadCatalog() {
+  if (catalog) return catalog;
+  try { const r = await fetch('catalogo.json'); catalog = (await r.json()).books || []; } catch { catalog = []; }
+  return catalog;
+}
+async function renderCatalog() {
+  const list = $('#catalog-list');
+  const books = await loadCatalog();
+  list.replaceChildren();
+  if (!books.length) { list.append(el('p', 'muted', 'Não consegui carregar o catálogo agora. Conecte-se à internet e tente de novo.')); return; }
+  for (const cb of books) {
+    const have = lib.some(b => b.id === cb.id);
+    const card = el('article', 'cat-card');
+    const cover = buildCover(cb); cover.addEventListener('click', () => have ? openBook(cb.id) : addFromCatalog(cb));
+    const txt = el('div', 'cat-txt');
+    txt.append(el('h3', null, cb.title), el('p', 'sub', cb.subtitle || ''));
+    const chips = el('div', 'chips');
+    chips.append(el('span', 'tchip lvl', 'Nível ' + cb.level), ...cb.topics.map(t => el('span', 'tchip', t)));
+    const words = cb.chapters.reduce((a, c) => a + c.paras.reduce((n, p) => n + p.split(/\s+/).length, 0), 0);
+    txt.append(chips, el('p', 'blurb', cb.blurb), el('p', 'size', `${cb.chapters.length} capítulos · ~${Math.round(words / 50) * 50} palavras · grátis`));
+    const btn = el('button', have ? 'btn' : 'btn primary', have ? 'Abrir na estante' : '＋ Adicionar à estante'); btn.type = 'button';
+    btn.addEventListener('click', () => have ? openBook(cb.id) : addFromCatalog(cb));
+    txt.append(btn);
+    card.append(cover, txt);
+    list.append(card);
+  }
+}
+async function addFromCatalog(cb) {
+  try {
+    await saveBook({ id: cb.id, title: cb.title, author: cb.author, level: cb.level, hue: cb.hue,
+      chapters: cb.chapters.map(c => paragraphsToChapter(c.title, c.paras)) });
+    renderShelf(); toast('“' + cb.title + '” está na sua estante ✓');
+  } catch (e) { console.error(e); toast('Não consegui adicionar este livro.'); }
 }
 
 /* ================= leitor: estado ================= */
@@ -549,6 +672,7 @@ async function openBook(id) {
   buildToc(); renderSpread(); saveProgress();
   loadAudioFor(id);
   showUI(true);
+  store.set('lv:last', id);
   history.replaceState(null, '', '#' + id);
 }
 function closeBook() {
@@ -900,8 +1024,9 @@ function relayout() {
   renderSpread();
 }
 let rzTimer;
-addEventListener('resize', () => { clearTimeout(rzTimer); rzTimer = setTimeout(relayout, 180); });
-addEventListener('orientationchange', () => { clearTimeout(rzTimer); rzTimer = setTimeout(relayout, 350); });
+const onResize = ms => () => { clearTimeout(rzTimer); rzTimer = setTimeout(() => { relayout(); if (!views.library.hidden) renderShelf(); }, ms); };
+addEventListener('resize', onResize(180));
+addEventListener('orientationchange', onResize(350));
 
 $('#fs-minus').addEventListener('click', () => { S.size = clamp(S.size - 1, 15, 34); saveSettings(); applySettings(); relayout(); });
 $('#fs-plus').addEventListener('click', () => { S.size = clamp(S.size + 1, 15, 34); saveSettings(); applySettings(); relayout(); });
