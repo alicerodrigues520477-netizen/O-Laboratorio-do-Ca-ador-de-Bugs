@@ -1,0 +1,939 @@
+/* Livro em Voz — leitor de livros em inglês com virada de página, leitura em voz alta e player de audiolivro.
+   Tudo roda no próprio aparelho (sem servidor, sem conta, sem anúncios). */
+(() => {
+'use strict';
+
+/* ================= utilidades ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* sem espaço / modo privado */ } },
+  del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
+};
+const fmtTime = s => { if (!isFinite(s)) return '0:00'; s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(ss).padStart(2, '0'); };
+
+let toastTimer;
+function toast(msg, ms = 2600) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, ms);
+}
+
+/* ================= ajustes ================= */
+const S = Object.assign({ theme: 'paper', size: 21, font: 'serif', sound: true, rate: 1, voice: '' }, store.get('lv:settings', {}));
+const saveSettings = () => store.set('lv:settings', S);
+
+/* ================= IndexedDB ================= */
+const DB = (() => {
+  let dbp;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open('livro-em-voz', 1);
+    r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('books', { keyPath: 'id' }); d.createObjectStore('audio', { keyPath: 'id' }); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  }));
+  const run = async (store, mode, fn) => {
+    const d = await open();
+    return new Promise((res, rej) => {
+      const t = d.transaction(store, mode); const rq = fn(t.objectStore(store));
+      t.oncomplete = () => res(rq && rq.result);
+      t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  };
+  return {
+    get: (s, k) => run(s, 'readonly', o => o.get(k)),
+    put: (s, v) => run(s, 'readwrite', o => o.put(v)),
+    del: (s, k) => run(s, 'readwrite', o => o.delete(k)),
+  };
+})();
+
+/* ================= biblioteca (metadados leves em localStorage) ================= */
+let lib = store.get('lv:lib', []);
+const saveLib = () => store.set('lv:lib', lib);
+
+const SAMPLE = {
+  id: 'sample-alice',
+  title: 'Alice’s Adventures in Wonderland',
+  author: 'Lewis Carroll (trecho)',
+  chapters: [
+    { title: 'Chapter I — Down the Rabbit-Hole', paras: [
+      'Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, “and what is the use of a book,” thought Alice “without pictures or conversations?”',
+      'So she was considering in her own mind (as well as she could, for the hot day made her feel very sleepy and stupid), whether the pleasure of making a daisy-chain would be worth the trouble of getting up and picking the daisies, when suddenly a White Rabbit with pink eyes ran close by her.',
+      'There was nothing so very remarkable in that; nor did Alice think it so very much out of the way to hear the Rabbit say to itself, “Oh dear! Oh dear! I shall be late!” (when she thought it over afterwards, it occurred to her that she ought to have wondered at this, but at the time it all seemed quite natural); but when the Rabbit actually took a watch out of its waistcoat-pocket, and looked at it, and then hurried on, Alice started to her feet, for it flashed across her mind that she had never before seen a rabbit with either a waistcoat-pocket, or a watch to take out of it, and burning with curiosity, she ran across the field after it, and fortunately was just in time to see it pop down a large rabbit-hole under the hedge.',
+      'In another moment down went Alice after it, never once considering how in the world she was to get out again.',
+      'The rabbit-hole went straight on like a tunnel for some way, and then dipped suddenly down, so suddenly that Alice had not a moment to think about stopping herself before she found herself falling down a very deep well.',
+      'Either the well was very deep, or she fell very slowly, for she had plenty of time as she went down to look about her and to wonder what was going to happen next. First, she tried to look down and make out what she was coming to, but it was too dark to see anything; then she looked at the sides of the well, and noticed that they were filled with cupboards and book-shelves; here and there she saw maps and pictures hung upon pegs. She took down a jar from one of the shelves as she passed; it was labelled “ORANGE MARMALADE”, but to her great disappointment it was empty: she did not like to drop the jar for fear of killing somebody underneath, so managed to put it into one of the cupboards as she fell past it.',
+      'Down, down, down. There was nothing else to do, so Alice soon began talking again. “Dinah’ll miss me very much to-night, I should think!” (Dinah was the cat.) “I hope they’ll remember her saucer of milk at tea-time. Dinah my dear! I wish you were down here with me! There are no mice in the air, I’m afraid, but you might catch a bat, and that’s very like a mouse, you know. But do cats eat bats, I wonder?” And here Alice began to get rather sleepy, and went on saying to herself, in a dreamy sort of way, “Do cats eat bats? Do cats eat bats?” and sometimes, “Do bats eat cats?” for, as she couldn’t answer either question, it didn’t much matter which way she put it. She felt that she was dozing off, and had just begun to dream that she was walking hand in hand with Dinah, and saying to her very earnestly, “Now, Dinah, tell me the truth: did you ever eat a bat?” when suddenly, thump! thump! down she came upon a heap of sticks and dry leaves, and the fall was over.',
+    ] },
+    { title: 'Chapter II — The Pool of Tears', paras: [
+      '“Curiouser and curiouser!” cried Alice (she was so much surprised, that for the moment she quite forgot how to speak good English); “now I’m opening out like the largest telescope that ever was! Good-bye, feet!” (for when she looked down at her feet, they seemed to be almost out of sight, they were getting so far off). “Oh, my poor little feet, I wonder who will put on your shoes and stockings for you now, dears? I’m sure I shan’t be able! I shall be a great deal too far off to trouble myself about you: you must manage the best way you can—but I must be kind to them,” thought Alice, “or perhaps they won’t walk the way I want to go! Let me see: I’ll give them a new pair of boots every Christmas.”',
+    ] },
+  ],
+};
+
+/* ================= importação: EPUB e TXT ================= */
+const SKIP_TAGS = new Set(['script', 'style', 'head', 'svg', 'img', 'image', 'audio', 'video', 'iframe', 'object', 'canvas', 'noscript', 'math', 'table']);
+const HEADINGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+const BLOCKS = new Set(['p', 'div', 'section', 'article', 'aside', 'header', 'footer', 'main', 'nav', 'ul', 'ol', 'li', 'dl', 'dt', 'dd', 'blockquote', 'pre', 'figure', 'figcaption', 'hr', 'body', 'address', 'center', 'tr', 'td', 'th', 'caption', 'fieldset', 'form']);
+
+/** Converte HTML arbitrário de EPUB num HTML limpo e seguro (h1-h6, p, blockquote, hr, em, strong, br). */
+function sanitize(root) {
+  const out = el('div');
+  const inlineInto = (target, node) => {
+    for (const c of node.childNodes) {
+      if (c.nodeType === 3) { target.append(c.nodeValue.replace(/\s+/g, ' ')); continue; }
+      if (c.nodeType !== 1) continue;
+      const tag = c.localName.toLowerCase();
+      if (SKIP_TAGS.has(tag)) continue;
+      if (tag === 'br') { target.append(el('br')); continue; }
+      if (tag === 'em' || tag === 'i' || tag === 'cite') { const e = el('em'); inlineInto(e, c); target.append(e); continue; }
+      if (tag === 'strong' || tag === 'b') { const e = el('strong'); inlineInto(e, c); target.append(e); continue; }
+      inlineInto(target, c); // a, span, sup, small… viram texto simples
+    }
+  };
+  const hasText = n => n.textContent.replace(/\s+/g, '').length > 0;
+  const trimEdges = n => {
+    const f = n.firstChild; if (f && f.nodeType === 3) f.nodeValue = f.nodeValue.replace(/^\s+/, '');
+    const l = n.lastChild; if (l && l.nodeType === 3) l.nodeValue = l.nodeValue.replace(/\s+$/, '');
+  };
+  const walk = (node, into) => {
+    let cur = null;
+    for (const c of node.childNodes) {
+      if (c.nodeType === 3) {
+        const t = c.nodeValue.replace(/\s+/g, ' ');
+        if (!cur && !t.trim()) continue;
+        if (!cur) { cur = el('p'); into.append(cur); }
+        cur.append(t); continue;
+      }
+      if (c.nodeType !== 1) continue;
+      const tag = c.localName.toLowerCase();
+      if (SKIP_TAGS.has(tag)) continue;
+      if (tag === 'br') { if (cur) cur.append(el('br')); continue; }
+      if (!BLOCKS.has(tag) && !HEADINGS.has(tag)) {
+        if (!cur) { cur = el('p'); into.append(cur); }
+        inlineInto(cur, { childNodes: [c] }); continue;
+      }
+      cur = null;
+      if (HEADINGS.has(tag)) { const h = el(tag); inlineInto(h, c); trimEdges(h); if (hasText(h)) into.append(h); }
+      else if (tag === 'p' || tag === 'li' || tag === 'dt' || tag === 'dd' || tag === 'pre' || tag === 'figcaption') { const p = el('p'); inlineInto(p, c); trimEdges(p); if (hasText(p)) into.append(p); }
+      else if (tag === 'hr') into.append(el('hr'));
+      else if (tag === 'blockquote') { const q = el('blockquote'); walk(c, q); if (hasText(q)) into.append(q); }
+      else walk(c, into);
+    }
+    // tira espaços nas pontas dos parágrafos criados por texto solto
+    for (const p of $$(':scope > p', into)) { trimEdges(p); if (!hasText(p)) p.remove(); }
+  };
+  walk(root, out);
+  return out;
+}
+
+function chapterRecord(title, outDiv) {
+  const text = outDiv.textContent.replace(/\s+/g, ' ').trim();
+  return { title, html: outDiv.innerHTML, chars: text.length };
+}
+
+const dirOf = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/') + 1) : '';
+function resolvePath(dir, href) {
+  const parts = (dir + decodeURIComponent(href)).split('/'); const out = [];
+  for (const s of parts) { if (s === '..') out.pop(); else if (s && s !== '.') out.push(s); }
+  return out.join('/');
+}
+
+async function parseEpub(buf, fname) {
+  const zip = await JSZip.loadAsync(buf);
+  const read = async p => { const f = zip.file(p) || zip.file(decodeURIComponent(p)); return f ? f.async('string') : null; };
+  const xml = (s, type = 'application/xml') => new DOMParser().parseFromString(s, type);
+  const xhtml = s => { const d = xml(s, 'application/xhtml+xml'); return d.getElementsByTagName('parsererror').length ? xml(s, 'text/html') : d; };
+
+  const containerXml = await read('META-INF/container.xml');
+  if (!containerXml) throw new Error('Este arquivo não parece ser um EPUB válido.');
+  const rootPath = xml(containerXml).getElementsByTagName('rootfile')[0].getAttribute('full-path');
+  const opf = xml(await read(rootPath));
+  const base = dirOf(rootPath);
+  const meta = tag => { const n = opf.getElementsByTagNameNS('*', tag)[0]; return n ? n.textContent.trim() : ''; };
+
+  const manifest = {};
+  for (const it of opf.getElementsByTagNameNS('*', 'item')) manifest[it.getAttribute('id')] = { href: it.getAttribute('href'), props: it.getAttribute('properties') || '' };
+  const spine = [...opf.getElementsByTagNameNS('*', 'itemref')].filter(r => r.getAttribute('linear') !== 'no').map(r => r.getAttribute('idref')).filter(id => manifest[id]);
+
+  // rótulos do sumário (EPUB3 nav ou EPUB2 ncx)
+  const labels = {};
+  try {
+    const nav = Object.values(manifest).find(m => m.props.split(/\s+/).includes('nav'));
+    if (nav) {
+      const p = resolvePath(base, nav.href); const doc = xml(await read(p), 'text/html');
+      const toc = doc.querySelector('nav[epub\\:type~="toc"]') || doc.querySelector('nav');
+      for (const a of toc ? toc.querySelectorAll('a[href]') : []) { const k = resolvePath(dirOf(p), a.getAttribute('href').split('#')[0]); if (!labels[k]) labels[k] = a.textContent.replace(/\s+/g, ' ').trim(); }
+    } else {
+      const ncxItem = Object.values(manifest).find(m => /\.ncx$/i.test(m.href));
+      if (ncxItem) {
+        const p = resolvePath(base, ncxItem.href); const doc = xml(await read(p));
+        for (const np of doc.getElementsByTagName('navPoint')) {
+          const t = np.getElementsByTagName('text')[0], c = np.getElementsByTagName('content')[0];
+          if (t && c) { const k = resolvePath(dirOf(p), c.getAttribute('src').split('#')[0]); if (!labels[k]) labels[k] = t.textContent.replace(/\s+/g, ' ').trim(); }
+        }
+      }
+    }
+  } catch { /* sumário é opcional */ }
+
+  const chapters = [];
+  let n = 0;
+  for (const id of spine) {
+    const path = resolvePath(base, manifest[id].href);
+    const raw = await read(path); if (!raw) continue;
+    const doc = xhtml(raw);
+    const body = doc.getElementsByTagName('body')[0]; if (!body) continue;
+    const clean = sanitize(body);
+    const ch = chapterRecord('', clean);
+    if (ch.chars < 40) continue;
+    n++;
+    const h = clean.querySelector('h1,h2,h3');
+    ch.title = labels[path] || (h && h.textContent.replace(/\s+/g, ' ').trim()) || ('Seção ' + n);
+    chapters.push(ch);
+  }
+  return { title: meta('title') || fname.replace(/\.epub$/i, ''), author: meta('creator'), chapters };
+}
+
+function parseTxt(text, fname) {
+  text = text.replace(/\r\n?/g, '\n');
+  const title = (text.match(/^Title:\s*(.+)$/m) || [])[1];
+  const author = (text.match(/^Author:\s*(.+)$/m) || [])[1];
+  const s = text.search(/\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG[^\n]*\n/i);
+  if (s >= 0) text = text.slice(text.indexOf('\n', s) + 1);
+  const e = text.search(/\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG/i);
+  if (e >= 0) text = text.slice(0, e);
+
+  const paras = text.split(/\n\s*\n/).map(p => p.split('\n').map(l => l.trim()).filter(Boolean).join(' ')).filter(Boolean);
+  const isHead = p => p.length < 90 && /^(chapter|book|part|section|prologue|epilogue|preface|introduction)\b/i.test(p);
+  const chapters = []; let cur = null;
+  const flush = () => { if (cur && cur.paras.length) chapters.push(cur); };
+  for (const p of paras) {
+    if (isHead(p)) { flush(); cur = { title: p, paras: [] }; }
+    else { if (!cur) cur = { title: 'Início', paras: [] }; cur.paras.push(p); }
+  }
+  flush();
+  // sem marcações de capítulo: divide em blocos de ~8 mil caracteres
+  if (chapters.length <= 1 && paras.length > 1) {
+    chapters.length = 0; let acc = [], size = 0, k = 1;
+    for (const p of paras) { acc.push(p); size += p.length; if (size > 8000) { chapters.push({ title: 'Parte ' + k++, paras: acc }); acc = []; size = 0; } }
+    if (acc.length) chapters.push({ title: 'Parte ' + k, paras: acc });
+  }
+  return { title: (title || fname.replace(/\.txt$/i, '')).trim(), author: (author || '').trim(), chapters: chapters.map(c => paragraphsToChapter(c.title, c.paras)) };
+}
+
+function paragraphsToChapter(title, paras) {
+  const d = el('div');
+  d.append(el('h2', null, title));
+  for (const p of paras) d.append(el('p', null, p));
+  return chapterRecord(title, d);
+}
+
+async function saveBook(book) {
+  await DB.put('books', book);
+  const chars = book.chapters.reduce((a, c) => a + c.chars, 0);
+  lib = lib.filter(b => b.id !== book.id);
+  lib.unshift({ id: book.id, title: book.title, author: book.author, chapters: book.chapters.length, chars, added: Date.now() });
+  saveLib();
+}
+
+async function importFile(file) {
+  const name = file.name.toLowerCase();
+  let book;
+  if (name.endsWith('.epub') || file.type === 'application/epub+zip') book = await parseEpub(await file.arrayBuffer(), file.name);
+  else book = parseTxt(await file.text(), file.name);
+  if (!book.chapters.length) throw new Error('Não encontrei texto neste arquivo.');
+  book.id = 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  await saveBook(book);
+  return book;
+}
+
+async function ensureSample() {
+  if (store.get('lv:sample-removed', false) || lib.some(b => b.id === SAMPLE.id)) return;
+  const book = { id: SAMPLE.id, title: SAMPLE.title, author: SAMPLE.author, chapters: SAMPLE.chapters.map(c => paragraphsToChapter(c.title, c.paras)) };
+  await saveBook(book);
+}
+
+/* ================= tela da biblioteca ================= */
+const views = { library: $('#library'), reader: $('#reader') };
+function showView(name) { for (const [k, v] of Object.entries(views)) v.hidden = k !== name; }
+
+function hueOf(s) { let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; }
+
+function renderShelf() {
+  const shelf = $('#shelf'); shelf.replaceChildren();
+  if (!lib.length) shelf.append(el('p', 'empty-note', 'Nenhum livro ainda. Toque em “Adicionar livro”.'));
+  for (const b of lib) {
+    const card = el('div', 'card');
+    const open = el('button', 'cover'); open.type = 'button';
+    const h = hueOf(b.title);
+    open.style.background = `linear-gradient(160deg, hsl(${h} 42% 34%), hsl(${(h + 30) % 360} 48% 17%))`;
+    const top = el('div'); top.append(el('div', 't', b.title), el('div', 'orn'));
+    open.append(top, el('div', 'a', b.author || ''));
+    open.addEventListener('click', () => openBook(b.id));
+    const del = el('button', 'del', '✕'); del.type = 'button'; del.setAttribute('aria-label', 'Remover ' + b.title);
+    del.addEventListener('click', async e => {
+      e.stopPropagation();
+      if (!confirm('Remover “' + b.title + '” da biblioteca?')) return;
+      await DB.del('books', b.id); await DB.del('audio', b.id).catch(() => {});
+      lib = lib.filter(x => x.id !== b.id); saveLib();
+      store.del('lv:pos:' + b.id); store.del('lv:pct:' + b.id); store.del('lv:apos:' + b.id);
+      if (b.id === SAMPLE.id) store.set('lv:sample-removed', true);
+      renderShelf();
+    });
+    const pct = Math.round((store.get('lv:pct:' + b.id, 0)) * 100);
+    const prog = el('div', 'prog'); const bar = el('i'); bar.style.width = pct + '%'; prog.append(bar);
+    const meta = el('div', 'meta'); meta.append(el('span', null, pct ? pct + '% lido' : 'Novo'), el('span', null, b.chapters + ' cap.'));
+    card.append(open, del, prog, meta);
+    shelf.append(card);
+  }
+}
+
+/* ================= leitor: estado ================= */
+let book = null;                         // {id,title,author,chapters:[{title,html,chars}]}
+let pos = { c: 0, p: 0 };                // capítulo e primeira página visível
+const g = { per: 1, pw: 600, ph: 800, padX: 48, padY: 56, tw: 504, th: 688, gap: 96 };
+const layouts = new Map();               // capítulo -> {tpl,n,sents,sentPage,pageFirst}
+const bookEl = $('#book'), stageEl = $('#stage');
+const measureBox = el('div'); measureBox.style.cssText = 'position:fixed;left:-20000px;top:0;visibility:hidden;pointer-events:none;';
+document.body.append(measureBox);
+
+function computeGeometry() {
+  const probe = getComputedStyle($('#safe-probe'));
+  const sat = parseFloat(probe.paddingTop) || 0, sar = parseFloat(probe.paddingRight) || 0, sab = parseFloat(probe.paddingBottom) || 0, sal = parseFloat(probe.paddingLeft) || 0;
+  const rs = document.documentElement.style;
+  rs.setProperty('--sat', sat + 'px'); rs.setProperty('--sar', sar + 'px'); rs.setProperty('--sab', sab + 'px'); rs.setProperty('--sal', sal + 'px');
+  const W = innerWidth, H = innerHeight;
+  const availW = W - sal - sar - 28, availH = H - sat - sab - 40;
+  g.per = (W >= 900 && W > H * 1.05) ? 2 : 1;
+  const pw = g.per === 2 ? Math.min(availW / 2, availH * 0.82) : Math.min(availW, 700, availH * 0.86);
+  g.pw = Math.floor(pw);
+  g.ph = Math.floor(Math.min(availH, g.pw * 1.62));
+  g.padX = clamp(Math.round(g.pw * 0.085), 26, 60);
+  g.padY = clamp(Math.round(g.ph * 0.075), 38, 66);
+  g.tw = g.pw - 2 * g.padX; g.th = g.ph - 2 * g.padY; g.gap = 2 * g.padX;
+  rs.setProperty('--pw', g.pw + 'px'); rs.setProperty('--ph', g.ph + 'px'); rs.setProperty('--fs', S.size + 'px');
+}
+
+/* ----- frases: quebra o texto em sentenças e envolve cada uma num <span class="s" data-i> ----- */
+const ABBR = /(?:\b(?:Mr|Mrs|Ms|Dr|St|Prof|Jr|Sr|vs|etc|No|Mt|Gen|Col|Capt|Lt|Sgt|Rev|Hon)|\b[A-Z])\.$/;
+function splitSentences(full) {
+  const cuts = [0];
+  const re = /([.!?…]+["'”’)\]]*)(\s+)/g; let m;
+  while ((m = re.exec(full))) {
+    const end = m.index + m[0].length;
+    const before = full.slice(0, m.index + m[1].length);
+    const next = full.charAt(end);
+    if (/^[a-z]/.test(next)) continue;               // “…!” she said  /  etc. and
+    if (m[1] === '.' && ABBR.test(before)) continue; // Mr. Rabbit
+    cuts.push(end);
+  }
+  cuts.push(full.length);
+  const ranges = [];
+  for (let i = 0; i < cuts.length - 1; i++) if (cuts[i + 1] > cuts[i]) ranges.push({ s: cuts[i], e: cuts[i + 1] });
+  return ranges;
+}
+
+function wrapSentences(tpl) {
+  const sents = [], firsts = [];
+  for (const block of $$('p,h1,h2,h3,h4,h5,h6', tpl)) {
+    const nodes = []; let full = '';
+    const w = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    for (let n; (n = w.nextNode());) { nodes.push({ node: n, start: full.length }); full += n.nodeValue; }
+    if (!full.trim()) continue;
+    const ranges = splitSentences(full);
+    const base = sents.length;
+    for (const r of ranges) sents.push(full.slice(r.s, r.e).replace(/\s+/g, ' ').trim());
+    for (const { node, start } of nodes) {
+      const text = node.nodeValue, end = start + text.length, frag = document.createDocumentFragment();
+      ranges.forEach((r, k) => {
+        const a = Math.max(r.s, start), b = Math.min(r.e, end);
+        if (a >= b) return;
+        const span = el('span', 's', text.slice(a - start, b - start)); span.dataset.i = base + k;
+        if (!firsts[base + k]) firsts[base + k] = span;
+        frag.append(span);
+      });
+      node.replaceWith(frag);
+    }
+  }
+  return { sents, firsts };
+}
+
+function getLayout(c) {
+  let L = layouts.get(c);
+  if (L) return L;
+  const tpl = el('div', 'flow'); tpl.lang = 'en';
+  tpl.innerHTML = book.chapters[c].html;
+  const { sents, firsts } = wrapSentences(tpl);
+  tpl.style.cssText = `width:${g.tw}px;height:${g.th}px;column-width:${g.tw}px;column-gap:${g.gap}px;position:static;`;
+  measureBox.append(tpl);
+  const n = Math.max(1, Math.round((tpl.scrollWidth + g.gap) / g.pw));
+  const left0 = tpl.getBoundingClientRect().left;
+  const sentPage = firsts.map(sp => { const r = sp.getClientRects()[0]; return r ? clamp(Math.floor((r.left - left0 + 2) / g.pw), 0, n - 1) : 0; });
+  const pageFirst = []; let i = 0;
+  for (let p = 0; p < n; p++) { while (i < sentPage.length && sentPage[i] < p) i++; pageFirst[p] = i; }
+  tpl.style.position = 'absolute'; // as cópias usadas nas páginas são absolutas
+  L = { tpl, n, sents, sentPage, pageFirst };
+  layouts.set(c, L);
+  // mantém poucos capítulos medidos na memória
+  if (layouts.size > 5) for (const k of layouts.keys()) { if (Math.abs(k - c) > 2 && k !== pos.c) { layouts.get(k).tpl.remove(); layouts.delete(k); } }
+  return L;
+}
+function clearLayouts() { layouts.clear(); measureBox.replaceChildren(); }
+
+/* ----- páginas ----- */
+function pageView(c, p, kind) {
+  const L = getLayout(c);
+  const page = el('div', 'page ' + kind); page.dataset.c = c;
+  if (p < 0 || p >= L.n) { page.classList.add('blank'); return page; }
+  const clip = el('div', 'clip');
+  clip.style.cssText = `left:${g.padX}px;top:${g.padY}px;width:${g.tw}px;height:${g.th}px`;
+  const flow = L.tpl.cloneNode(true);
+  flow.style.position = 'absolute';
+  flow.style.transform = `translateX(${-p * g.pw}px)`;
+  clip.append(flow);
+  page.append(clip, el('div', 'folio top', book.chapters[c].title), el('div', 'folio bot', String(p + 1)));
+  return page;
+}
+
+const lastStart = n => Math.floor((n - 1) / g.per) * g.per;
+function nextPos(P) {
+  const L = getLayout(P.c);
+  if (P.p + g.per < L.n) return { c: P.c, p: P.p + g.per };
+  return P.c + 1 < book.chapters.length ? { c: P.c + 1, p: 0 } : null;
+}
+function prevPos(P) {
+  if (P.p - g.per >= 0) return { c: P.c, p: P.p - g.per };
+  return P.c > 0 ? { c: P.c - 1, p: lastStart(getLayout(P.c - 1).n) } : null;
+}
+
+function renderSpread() {
+  bookEl.replaceChildren();
+  bookEl.classList.toggle('single', g.per === 1);
+  const { c, p } = pos;
+  if (g.per === 2) bookEl.append(pageView(c, p, 'left'), pageView(c, p + 1, 'right'));
+  else bookEl.append(pageView(c, p, 'solo'));
+  if (hl) applyHL();
+  refreshChrome();
+}
+
+/* ----- virada de página ----- */
+const DUR = 720;
+let flip = null;
+
+function swapSlot(sel, node) { const old = $(':scope > .page' + sel, bookEl); if (old) old.replaceWith(node); }
+
+function startFlip(dir) {
+  if (flip) return false;
+  const target = dir > 0 ? nextPos(pos) : prevPos(pos);
+  if (!target) { toast(dir > 0 ? 'Fim do livro 📖' : 'Você está no início', 1400); return false; }
+  const two = g.per === 2;
+  const leaf = el('div', 'leaf'), front = el('div', 'face front'), back = el('div', 'face back');
+  const shF = el('div', 'shade'), shB = el('div', 'shade');
+  leaf.append(front, back);
+  leaf.style.transformOrigin = 'left center';
+  if (two) {
+    if (dir > 0) {
+      front.append(pageView(pos.c, pos.p + 1, 'right'), shF); back.append(pageView(target.c, target.p, 'left'), shB);
+      leaf.style.left = g.pw + 'px';
+      swapSlot('.right', pageView(target.c, target.p + 1, 'right'));
+    } else {
+      front.append(pageView(pos.c, pos.p, 'left'), shF); back.append(pageView(target.c, target.p + 1, 'right'), shB);
+      leaf.style.left = '0px'; leaf.style.transformOrigin = 'right center';
+      swapSlot('.left', pageView(target.c, target.p, 'left'));
+    }
+  } else if (dir > 0) {
+    front.append(pageView(pos.c, pos.p, 'solo'), shF);
+    swapSlot('.solo', pageView(target.c, target.p, 'solo'));
+  } else {
+    front.append(pageView(target.c, target.p, 'solo'), shF);
+  }
+  bookEl.append(leaf);
+  flip = { dir, target, leaf, shF, shB, two, p: 0, done: false, byUser: true };
+  setFlip(0, false);
+  void leaf.offsetWidth; // força o layout antes de animar
+  return true;
+}
+
+function setFlip(p, animate, dur = DUR) {
+  const f = flip; if (!f) return;
+  f.p = p;
+  const ease = 'cubic-bezier(.42,.05,.22,1)';
+  f.leaf.style.transition = animate ? `transform ${dur}ms ${ease}, opacity ${dur}ms ease` : 'none';
+  const sh = animate ? `opacity ${dur}ms ease` : 'none';
+  f.shF.style.transition = sh; f.shB.style.transition = sh;
+  if (f.two) {
+    f.leaf.style.transform = `rotateY(${(f.dir > 0 ? -1 : 1) * p * 180}deg)`;
+    f.leaf.style.opacity = 1;
+    f.shF.style.opacity = 0.42 * p; f.shB.style.opacity = 0.42 * (1 - p);
+  } else {
+    const q = f.dir > 0 ? p : 1 - p; // q = quanto a folha está "levantada"
+    f.leaf.style.transform = `rotateY(${-q * 100}deg)`; // passa de 90° e some de lado, como uma página real
+    f.leaf.style.opacity = 1;
+    f.shF.style.opacity = 0.5 * q;
+  }
+}
+
+function finishFlip() {
+  const f = flip; if (!f || f.done) return;
+  f.done = true; setFlip(1, true);
+  setTimeout(() => {
+    if (flip !== f) return;
+    flip = null; pos = f.target; renderSpread(); afterTurn(f.byUser);
+  }, DUR + 40);
+}
+function cancelFlip() {
+  const f = flip; if (!f || f.done) return;
+  f.done = true; setFlip(0, true, 380);
+  setTimeout(() => { if (flip !== f) return; flip = null; renderSpread(); }, 420);
+}
+function turn(dir, byUser = true) {
+  if (!startFlip(dir)) return false;
+  flip.byUser = byUser;
+  requestAnimationFrame(finishFlip);
+  if (byUser && S.sound && !tts.on) pageSound();
+  return true;
+}
+function jumpTo(target, byUser = true) {
+  flip = null; pos = { c: target.c, p: target.p - target.p % g.per };
+  renderSpread(); afterTurn(byUser);
+}
+
+function afterTurn(byUser) {
+  if (tts.on) {
+    if (byUser) { tts.c = pos.c; tts.idx = getLayout(pos.c).pageFirst[pos.p] || 0; speakCurrent(true); }
+    else ensureVisible(tts.c, tts.idx);
+  }
+  saveProgress();
+}
+
+/* ----- progresso ----- */
+function saveProgress() {
+  if (!book) return;
+  const L = getLayout(pos.c);
+  const s = (tts.on && tts.c === pos.c) ? tts.idx : (L.pageFirst[pos.p] || 0);
+  store.set('lv:pos:' + book.id, { c: pos.c, s });
+  store.set('lv:pct:' + book.id, bookFraction());
+}
+function bookFraction() {
+  const total = book.chapters.reduce((a, c) => a + c.chars, 0) || 1;
+  let before = 0; for (let i = 0; i < pos.c; i++) before += book.chapters[i].chars;
+  const L = getLayout(pos.c);
+  return clamp((before + book.chapters[pos.c].chars * ((pos.p + g.per) / L.n)) / total, 0, 1);
+}
+
+function refreshChrome() {
+  const L = getLayout(pos.c);
+  $('#bk-title').textContent = book.title;
+  $('#bk-chapter').textContent = book.chapters[pos.c].title;
+  const slider = $('#slider');
+  slider.max = Math.max(0, Math.ceil(L.n / g.per) - 1); slider.value = Math.floor(pos.p / g.per);
+  $('#pos-label').textContent = `Página ${pos.p + 1}${g.per === 2 && pos.p + 1 < L.n ? '–' + (pos.p + 2) : ''} de ${L.n} · Cap. ${pos.c + 1}/${book.chapters.length} · ${Math.round(bookFraction() * 100)}%`;
+  $$('#toc-list button').forEach((b, i) => b.classList.toggle('cur', i === pos.c));
+}
+
+/* ================= abrir livro ================= */
+async function openBook(id) {
+  let b;
+  try { b = await DB.get('books', id); } catch { b = null; }
+  if (!b) { toast('Não consegui abrir este livro.'); return; }
+  ttsStop(); audioStop();
+  book = b; clearLayouts();
+  showView('reader'); computeGeometry();
+  const pr = store.get('lv:pos:' + id, { c: 0, s: 0 });
+  const c = clamp(pr.c | 0, 0, b.chapters.length - 1), L = getLayout(c);
+  const page = L.sentPage[pr.s] || 0;
+  pos = { c, p: page - page % g.per };
+  buildToc(); renderSpread(); saveProgress();
+  loadAudioFor(id);
+  showUI(true);
+  history.replaceState(null, '', '#' + id);
+}
+function closeBook() {
+  ttsStop(); audioStop(); saveProgress();
+  book = null; clearLayouts(); flip = null; bookEl.replaceChildren();
+  showView('library'); renderShelf(); history.replaceState(null, '', location.pathname);
+}
+
+function buildToc() {
+  const ol = $('#toc-list'); ol.replaceChildren();
+  book.chapters.forEach((ch, i) => {
+    const li = el('li'), b = el('button', null, ch.title); b.type = 'button';
+    b.addEventListener('click', () => { closeSheets(); jumpTo({ c: i, p: 0 }); });
+    li.append(b); ol.append(li);
+  });
+}
+
+/* ================= interação: toque, arrastar, teclado ================= */
+let uiTimer = null;
+function showUI(autoHide) { document.body.classList.remove('ui-hidden'); clearTimeout(uiTimer); if (autoHide) uiTimer = setTimeout(hideUI, 4500); }
+function hideUI() { if (!sheetOpen()) document.body.classList.add('ui-hidden'); }
+function toggleUI() { document.body.classList.contains('ui-hidden') ? showUI(true) : hideUI(); }
+
+let drag = null, lastTap = { t: 0, x: 0, y: 0 };
+stageEl.addEventListener('pointerdown', e => {
+  if (flip) return;
+  drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), active: false, dir: 0, target: e.target };
+});
+stageEl.addEventListener('pointermove', e => {
+  if (!drag || drag.id !== e.pointerId) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.active) {
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      const dir = dx < 0 ? 1 : -1;
+      if (!startFlip(dir)) { drag = null; return; }
+      flip.byUser = true; drag.active = true; drag.dir = dir;
+      try { stageEl.setPointerCapture(e.pointerId); } catch { /* ok */ }
+      hideUI();
+    }
+    return;
+  }
+  const span = g.per === 2 ? g.pw : g.pw * 0.8;
+  const signed = (drag.dir > 0 ? -dx : dx) / span;
+  setFlip(clamp(signed, 0, 1), false);
+});
+const endDrag = e => {
+  if (!drag || drag.id !== e.pointerId) return;
+  const d = drag; drag = null;
+  if (d.active) {
+    const dt = Math.max(1, performance.now() - d.t), dx = Math.abs(e.clientX - d.x);
+    const p = flip ? flip.p : 0, speed = dx / dt;
+    if (S.sound && p > 0.35 && !tts.on) pageSound();
+    (p > 0.33 || (speed > 0.5 && p > 0.06)) ? finishFlip() : cancelFlip();
+    return;
+  }
+  if (e.type === 'pointercancel') return;
+  if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12) return;
+  onTap(e, d.target);
+};
+stageEl.addEventListener('pointerup', endDrag);
+stageEl.addEventListener('pointercancel', endDrag);
+
+function onTap(e, target) {
+  const W = innerWidth;
+  if (e.clientX < W * 0.22) { turn(-1, true); return; }
+  if (e.clientX > W * 0.78) { turn(1, true); return; }
+  const now = performance.now();
+  const span = target && target.closest ? target.closest('.s') : null;
+  if (span && now - lastTap.t < 330 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 36) {
+    lastTap.t = 0; readFromSpan(span); return;
+  }
+  lastTap = { t: now, x: e.clientX, y: e.clientY };
+  toggleUI();
+}
+function readFromSpan(span) {
+  const page = span.closest('.page'); if (!page) return;
+  ttsStart(+page.dataset.c, +span.dataset.i);
+}
+
+document.addEventListener('keydown', e => {
+  if (!book || views.reader.hidden || sheetOpen()) return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); turn(1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); turn(-1); }
+  else if (e.key === 'Escape') closeBook();
+});
+
+$('#slider').addEventListener('input', e => {
+  const v = +e.target.value * g.per, L = getLayout(pos.c);
+  $('#pos-label').textContent = `Página ${v + 1} de ${L.n}`;
+});
+$('#slider').addEventListener('change', e => jumpTo({ c: pos.c, p: +e.target.value * g.per }));
+
+/* ================= som de página ================= */
+let actx;
+function pageSound() {
+  if (!S.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const dur = 0.3, sr = actx.sampleRate, buf = actx.createBuffer(1, Math.floor(sr * dur), sr), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) {
+      const t = i / d.length, env = Math.pow(1 - t, 2.4) * (t < 0.05 ? t / 0.05 : 1);
+      d[i] = (Math.random() * 2 - 1) * env * (0.55 + 0.45 * Math.sin(t * 46));
+    }
+    const src = actx.createBufferSource(); src.buffer = buf;
+    const bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2800; bp.Q.value = 0.7;
+    const gain = actx.createGain(); gain.gain.value = 0.2;
+    src.connect(bp); bp.connect(gain); gain.connect(actx.destination); src.start();
+  } catch { /* sem áudio web */ }
+}
+
+/* ================= leitura em voz alta (TTS) ================= */
+const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+const tts = { on: false, c: 0, idx: 0, token: 0 };
+let voices = [];
+let hl = null;     // {c, idx}
+
+function loadVoices() {
+  if (!synth) return;
+  const all = synth.getVoices();
+  voices = all.filter(v => /^en([-_]|$)/i.test(v.lang));
+  const q = v => /premium/i.test(v.name + v.voiceURI) ? 0 : /enhanced|aprimorad/i.test(v.name + v.voiceURI) ? 1 : 2;
+  voices.sort((a, b) => q(a) - q(b) || a.lang.localeCompare(b.lang) || a.name.localeCompare(b.name));
+  const sel = $('#sel-voice'); sel.replaceChildren();
+  if (!voices.length) { sel.append(new Option('Voz padrão do sistema', '')); return; }
+  for (const v of voices) sel.append(new Option(`${v.name} (${v.lang.replace('_', '-')})${q(v) < 2 ? ' ★' : ''}`, v.voiceURI));
+  sel.value = pickVoice() ? pickVoice().voiceURI : voices[0].voiceURI;
+}
+function pickVoice() {
+  if (!voices.length) return null;
+  return voices.find(v => v.voiceURI === S.voice)
+    || voices.find(v => /premium|enhanced/i.test(v.name) && /en[-_]US/i.test(v.lang))
+    || voices.find(v => /samantha|ava|allison|nicky/i.test(v.name) && /en[-_]US/i.test(v.lang))
+    || voices.find(v => /en[-_]US/i.test(v.lang)) || voices[0];
+}
+if (synth) { loadVoices(); synth.addEventListener ? synth.addEventListener('voiceschanged', loadVoices) : (synth.onvoiceschanged = loadVoices); }
+
+function utter(text, onend, onerror) {
+  const u = new SpeechSynthesisUtterance(text);
+  const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
+  u.rate = S.rate; u.pitch = 1;
+  u.onend = onend; u.onerror = onerror;
+  return u;
+}
+
+function ttsStart(c, idx) {
+  if (!synth) { toast('Este navegador não tem leitura em voz alta.'); return; }
+  audioStop();
+  tts.on = true; tts.c = c; tts.idx = idx;
+  setTtsUi(true); keepAwake(true);
+  speakCurrent(true);
+}
+function ttsStop() {
+  tts.on = false; tts.token++;
+  if (synth) synth.cancel();
+  setHL(null); setTtsUi(false); keepAwake(false);
+}
+function setTtsUi(on) { $('#ic-play').hidden = on; $('#ic-pause').hidden = !on; }
+
+function speakCurrent(fresh) {
+  if (!tts.on) return;
+  const token = ++tts.token;
+  const L = getLayout(tts.c);
+  if (tts.idx >= L.sents.length) {
+    if (tts.c + 1 < book.chapters.length) { tts.c++; tts.idx = 0; return speakCurrent(fresh); }
+    ttsStop(); toast('Fim do livro 📖'); return;
+  }
+  const text = L.sents[tts.idx];
+  if (!text) { tts.idx++; return speakCurrent(fresh); }
+  setHL(tts.c, tts.idx);
+  ensureVisible(tts.c, tts.idx);
+  saveProgress();
+  const next = () => { if (token !== tts.token || !tts.on) return; tts.idx++; speakCurrent(false); };
+  const u = utter(text, next, e => { if (token !== tts.token) return; if (e && (e.error === 'interrupted' || e.error === 'canceled')) return; next(); });
+  if (fresh) { synth.cancel(); setTimeout(() => { if (token === tts.token && tts.on) synth.speak(u); }, 60); }
+  else synth.speak(u);
+}
+
+/** Garante que a frase lida está visível, virando páginas se preciso. */
+function ensureVisible(c, idx) {
+  if (flip) return;
+  const L = getLayout(c);
+  const page = L.sentPage[idx] || 0, start = page - page % g.per;
+  if (c === pos.c && start === pos.p) return;
+  const n = nextPos(pos);
+  if (n && n.c === c && n.p === start) { turn(1, false); return; }
+  jumpTo({ c, p: start }, false);
+}
+
+function ttsStep(delta) {
+  if (!book) return;
+  if (!tts.on) { ttsStart(pos.c, getLayout(pos.c).pageFirst[pos.p] || 0); return; }
+  tts.idx = Math.max(0, tts.idx + delta);
+  speakCurrent(true);
+}
+$('#tts-play').addEventListener('click', () => {
+  if (tts.on) { ttsStop(); return; }
+  const L = getLayout(pos.c);
+  ttsStart(pos.c, L.pageFirst[pos.p] || 0);
+});
+$('#tts-prev').addEventListener('click', () => ttsStep(-1));
+$('#tts-next').addEventListener('click', () => ttsStep(1));
+
+const RATES = [0.7, 0.85, 1, 1.15, 1.3, 1.5];
+const fmtRate = r => r.toFixed(2).replace(/0$/, '') + '×';
+function setRate(r, restart = true) {
+  S.rate = r; saveSettings();
+  $('#tts-rate').textContent = fmtRate(r); $('#rate-val').textContent = fmtRate(r); $('#rng-rate').value = r;
+  if (tts.on && restart) speakCurrent(true);
+}
+$('#tts-rate').addEventListener('click', () => {
+  const i = RATES.findIndex(r => Math.abs(r - S.rate) < 0.01);
+  setRate(RATES[(i + 1) % RATES.length]);
+});
+
+/* ----- destaque da frase ----- */
+function clearHLDom() { $$('.s.hl').forEach(e => e.classList.remove('hl')); const f = layouts; for (const L of f.values()) L.tpl.querySelectorAll('.hl').forEach(e => e.classList.remove('hl')); }
+function applyHL() {
+  if (!hl) return;
+  const q = `[data-i="${hl.idx}"]`;
+  const L = layouts.get(hl.c); if (L) L.tpl.querySelectorAll(q).forEach(e => e.classList.add('hl'));
+  bookEl.querySelectorAll(`.page[data-c="${hl.c}"] ${q}`).forEach(e => e.classList.add('hl'));
+}
+function setHL(c, idx) { clearHLDom(); hl = c == null ? null : { c, idx }; applyHL(); }
+
+/* ----- tela sempre acesa durante a leitura ----- */
+let wake = null;
+async function keepAwake(on) {
+  try {
+    if (on && 'wakeLock' in navigator && !wake) { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); }
+    else if (!on && wake) { await wake.release(); wake = null; }
+  } catch { /* opcional */ }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (tts.on && synth && !synth.speaking && !synth.pending) speakCurrent(true);
+  if (tts.on || !audio.paused) keepAwake(true);
+});
+
+/* ================= audiolivro (arquivo do usuário) ================= */
+const audio = new Audio(); audio.preload = 'metadata';
+let audioUrl = null, sleepTimer = null, lastSave = 0;
+
+async function loadAudioFor(id) {
+  audioUnload();
+  try {
+    const rec = await DB.get('audio', id);
+    if (rec) attachAudio(rec.blob, rec.name, id);
+  } catch { /* sem áudio */ }
+  syncAudioPanel();
+}
+function attachAudio(blob, name, id) {
+  audioUnload();
+  audioUrl = URL.createObjectURL(blob); audio.src = audioUrl;
+  audio.dataset.name = name; audio.dataset.book = id;
+  const saved = store.get('lv:apos:' + id, 0);
+  audio.addEventListener('loadedmetadata', () => { if (saved && saved < audio.duration) audio.currentTime = saved; updateAudioUi(); }, { once: true });
+  audio.playbackRate = +$('#a-speed').value;
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({ title: book.title, artist: book.author || 'Audiolivro', album: 'Livro em Voz' });
+    navigator.mediaSession.setActionHandler('play', () => audio.play());
+    navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+    navigator.mediaSession.setActionHandler('seekbackward', () => skip(-15));
+    navigator.mediaSession.setActionHandler('seekforward', () => skip(15));
+  }
+}
+function audioUnload() {
+  audio.pause(); audio.removeAttribute('src'); audio.load();
+  if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
+  clearTimeout(sleepTimer); $('#a-sleep').value = '0';
+}
+function audioStop() { if (!audio.paused) audio.pause(); }
+function syncAudioPanel() {
+  const has = !!audioUrl;
+  $('#audio-empty').hidden = has; $('#audio-player').hidden = !has;
+  $('#audio-name').textContent = audio.dataset.name || '';
+  updateAudioUi();
+}
+function updateAudioUi() {
+  const d = audio.duration || 0;
+  $('#audio-cur').textContent = fmtTime(audio.currentTime); $('#audio-dur').textContent = fmtTime(d);
+  $('#audio-seek').value = d ? Math.round(audio.currentTime / d * 1000) : 0;
+  $('#a-ic-play').hidden = !audio.paused; $('#a-ic-pause').hidden = audio.paused;
+}
+function skip(s) { audio.currentTime = clamp(audio.currentTime + s, 0, audio.duration || 0); }
+
+audio.addEventListener('timeupdate', () => {
+  updateAudioUi();
+  const now = Date.now();
+  if (book && now - lastSave > 4000) { lastSave = now; store.set('lv:apos:' + book.id, audio.currentTime); }
+});
+audio.addEventListener('play', () => { ttsStop(); keepAwake(true); updateAudioUi(); });
+audio.addEventListener('pause', () => { if (book) store.set('lv:apos:' + book.id, audio.currentTime); updateAudioUi(); if (!tts.on) keepAwake(false); });
+audio.addEventListener('ended', updateAudioUi);
+$('#a-play').addEventListener('click', () => audio.paused ? audio.play().catch(() => toast('Não consegui tocar este áudio.')) : audio.pause());
+$('#a-back').addEventListener('click', () => skip(-15));
+$('#a-fwd').addEventListener('click', () => skip(15));
+$('#audio-seek').addEventListener('input', e => { if (audio.duration) audio.currentTime = e.target.value / 1000 * audio.duration; });
+$('#a-speed').addEventListener('change', e => { audio.playbackRate = +e.target.value; });
+$('#a-sleep').addEventListener('change', e => {
+  clearTimeout(sleepTimer); const m = +e.target.value;
+  if (m) { sleepTimer = setTimeout(() => { audio.pause(); ttsStop(); $('#a-sleep').value = '0'; toast('Boa noite! 🌙'); }, m * 60000); toast(`Desliga em ${m} min`); }
+});
+$('#file-audio').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f || !book) return;
+  try {
+    await DB.put('audio', { id: book.id, name: f.name, blob: f });
+    attachAudio(f, f.name, book.id); syncAudioPanel(); toast('Áudio anexado ✓');
+  } catch { toast('Não consegui guardar o áudio (espaço insuficiente?).'); }
+});
+$('#a-remove').addEventListener('click', async () => {
+  if (!confirm('Remover o áudio deste livro?')) return;
+  await DB.del('audio', book.id).catch(() => {}); store.del('lv:apos:' + book.id);
+  audioUnload(); delete audio.dataset.name; syncAudioPanel();
+});
+
+/* ================= painéis e ajustes ================= */
+const sheets = ['#sheet-toc', '#sheet-settings', '#sheet-audio'].map(s => $(s));
+const sheetOpen = () => sheets.some(s => !s.hidden);
+function openSheet(id) { closeSheets(); $(id).hidden = false; $('#scrim').hidden = false; showUI(false); if (id === '#sheet-audio') syncAudioPanel(); }
+function closeSheets() { sheets.forEach(s => { s.hidden = true; }); $('#scrim').hidden = true; if (book) showUI(true); }
+$('#scrim').addEventListener('click', closeSheets);
+$$('[data-close]').forEach(b => b.addEventListener('click', closeSheets));
+$('#btn-toc').addEventListener('click', () => openSheet('#sheet-toc'));
+$('#btn-settings').addEventListener('click', () => openSheet('#sheet-settings'));
+$('#btn-audio').addEventListener('click', () => openSheet('#sheet-audio'));
+$('#btn-back').addEventListener('click', closeBook);
+
+function applySettings() {
+  document.documentElement.dataset.theme = S.theme;
+  document.body.classList.toggle('sans', S.font === 'sans');
+  $$('#seg-theme button').forEach(b => b.classList.toggle('on', b.dataset.v === S.theme));
+  $$('#seg-font button').forEach(b => b.classList.toggle('on', b.dataset.v === S.font));
+  $('#fs-val').textContent = S.size; $('#chk-sound').checked = S.sound;
+  $('#tts-rate').textContent = fmtRate(S.rate); $('#rate-val').textContent = fmtRate(S.rate); $('#rng-rate').value = S.rate;
+  document.documentElement.style.setProperty('--fs', S.size + 'px');
+  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = S.theme === 'night' ? '#0c0b0a' : '#3a241c';
+}
+
+/** Recalcula as páginas mantendo o leitor na mesma frase (rotação, fonte, tema). */
+function relayout() {
+  if (!book) return;
+  const L0 = layouts.get(pos.c);
+  const anchor = L0 ? (tts.on && tts.c === pos.c ? tts.idx : (L0.pageFirst[pos.p] || 0)) : 0;
+  const c = pos.c; flip = null;
+  computeGeometry(); clearLayouts();
+  const L = getLayout(c), page = L.sentPage[anchor] || 0;
+  pos = { c, p: page - page % g.per };
+  renderSpread();
+}
+let rzTimer;
+addEventListener('resize', () => { clearTimeout(rzTimer); rzTimer = setTimeout(relayout, 180); });
+addEventListener('orientationchange', () => { clearTimeout(rzTimer); rzTimer = setTimeout(relayout, 350); });
+
+$('#fs-minus').addEventListener('click', () => { S.size = clamp(S.size - 1, 15, 34); saveSettings(); applySettings(); relayout(); });
+$('#fs-plus').addEventListener('click', () => { S.size = clamp(S.size + 1, 15, 34); saveSettings(); applySettings(); relayout(); });
+$$('#seg-theme button').forEach(b => b.addEventListener('click', () => { S.theme = b.dataset.v; saveSettings(); applySettings(); }));
+$$('#seg-font button').forEach(b => b.addEventListener('click', () => { S.font = b.dataset.v; saveSettings(); applySettings(); relayout(); }));
+$('#chk-sound').addEventListener('change', e => { S.sound = e.target.checked; saveSettings(); if (S.sound) pageSound(); });
+$('#sel-voice').addEventListener('change', e => { S.voice = e.target.value; saveSettings(); if (tts.on) speakCurrent(true); });
+$('#rng-rate').addEventListener('input', e => setRate(+e.target.value, false));
+$('#rng-rate').addEventListener('change', e => setRate(+e.target.value, true));
+$('#btn-voice-test').addEventListener('click', () => {
+  if (!synth) return toast('Sem leitura em voz alta neste navegador.');
+  synth.cancel(); setTimeout(() => synth.speak(utter('Alice was beginning to get very tired of sitting by her sister on the bank.')), 60);
+});
+if (!synth) { $('#tts-play').disabled = true; $('#tts-prev').disabled = true; $('#tts-next').disabled = true; $('#tts-rate').hidden = true; }
+
+/* ================= importar arquivo ================= */
+$('#file-book').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  toast('Importando…', 8000);
+  try { const b = await importFile(f); renderShelf(); toast('Livro adicionado ✓'); openBook(b.id); }
+  catch (err) { console.error(err); toast(err.message || 'Não consegui ler este arquivo.', 4200); }
+});
+
+/* ================= início ================= */
+(async function init() {
+  applySettings();
+  try { await ensureSample(); } catch (e) { console.error(e); toast('Aviso: o armazenamento do navegador não está disponível.', 5000); }
+  renderShelf();
+  const hash = location.hash.slice(1);
+  if (hash && lib.some(b => b.id === hash)) openBook(hash); else showView('library');
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+
+// ganchos para teste automatizado
+window.__lv = { get pos() { return pos; }, get g() { return g; }, get tts() { return tts; }, turn, jumpTo, ttsStart, ttsStop, getLayout, importFile, openBook };
+})();
