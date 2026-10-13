@@ -33,17 +33,30 @@
     <input id="file-book" type="file" accept=".epub,.txt,application/epub+zip,text/plain" hidden>
   </section>
 
-  <section id="shelf" class="shelf" aria-label="Seus livros"></section>
+  <section id="hero" class="hero" hidden></section>
+
+  <section class="case-wrap" aria-label="Sua estante">
+    <h2 class="case-title"><span>Minha estante</span></h2>
+    <div id="shelf" class="bookcase"></div>
+  </section>
+
+  <section class="catalog" aria-label="Livros grátis para começar">
+    <h2>Livros grátis para começar</h2>
+    <p class="muted">Escritos em inglês simples para este app. Toque para levar para a sua estante. <b>A1</b> = bem básico · <b>A2</b> = básico.</p>
+    <div id="catalog-list" class="cat-list"></div>
+  </section>
 
   <section class="tips">
-    <h2>Onde achar livros e audiobooks grátis (em inglês)</h2>
+    <h2>Mais clássicos gratuitos</h2>
+    <p class="muted">Textos de domínio público, em inglês um pouco mais antigo (nível intermediário). Baixe o <b>EPUB</b> no iPad e use “Adicionar livro”.</p>
     <ul>
-      <li><a href="https://www.gutenberg.org" target="_blank" rel="noopener">Project Gutenberg</a> — milhares de livros em <b>EPUB</b> de domínio público.</li>
-      <li><a href="https://standardebooks.org" target="_blank" rel="noopener">Standard Ebooks</a> — clássicos com ótima formatação (EPUB).</li>
-      <li><a href="https://librivox.org" target="_blank" rel="noopener">LibriVox</a> — audiobooks narrados por voluntários (MP3 grátis).</li>
-      <li><a href="https://archive.org" target="_blank" rel="noopener">Internet Archive</a> — livros e áudios de domínio público.</li>
+      <li><a href="https://www.gutenberg.org/ebooks/search/?query=as+a+man+thinketh" target="_blank" rel="noopener"><i>As a Man Thinketh</i></a> — James Allen · autoajuda curtinha.</li>
+      <li><a href="https://www.gutenberg.org/ebooks/search/?query=game+of+life+and+how+to+play+it" target="_blank" rel="noopener"><i>The Game of Life and How to Play It</i></a> — Florence Scovel Shinn · fé e pensamento positivo.</li>
+      <li><a href="https://www.gutenberg.org/ebooks/search/?query=acres+of+diamonds" target="_blank" rel="noopener"><i>Acres of Diamonds</i></a> — Russell Conwell · motivação.</li>
+      <li><a href="https://www.gutenberg.org/ebooks/search/?query=imitation+of+christ" target="_blank" rel="noopener"><i>The Imitation of Christ</i></a> — Thomas à Kempis · devoção e orações.</li>
+      <li><a href="https://standardebooks.org/ebooks" target="_blank" rel="noopener">Standard Ebooks</a> — clássicos com ótima formatação (EPUB).</li>
+      <li><a href="https://librivox.org" target="_blank" rel="noopener">LibriVox</a> — audiobooks grátis (MP3) para anexar no botão 🎧.</li>
     </ul>
-    <p class="muted">Baixe o arquivo no iPad, toque em <b>Adicionar livro</b> e escolha-o em “Arquivos”. O áudio (MP3/M4A/M4B) é anexado dentro do livro, no botão 🎧.</p>
   </section>
 </main>
 

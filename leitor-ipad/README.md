@@ -26,7 +26,23 @@ Leitor gratuito de livros em inglês para iPad, com **páginas que viram**, **le
 - A posição de leitura e do áudio é salva automaticamente.
 - Formatos de livro: **.epub** e **.txt** (inclusive os do Project Gutenberg).
 
-## Onde achar livros e audiobooks grátis
+## Livros grátis já incluídos
+
+Na biblioteca, a seção **Livros grátis para começar** tem livros em inglês simples (níveis A1–A2), escritos originalmente para este app e liberados para uso livre. Um toque leva o livro para a estante, e ele funciona offline:
+
+| Livro | Nível | Tema |
+|---|---|---|
+| *Small Steps* | A2 | Autoajuda: hábitos, medo, amizade, gratidão (com vocabulário em cada capítulo) |
+| *One Thought a Day* | A1 | Autoajuda: 30 pensamentos curtos, um por dia |
+| *Prayers for Every Day* | A1 | Orações: 12 orações do dia a dia, Pai Nosso e Salmo 23 (texto clássico + palavras simples) |
+
+Os textos ficam em `catalogo.json`; para adicionar mais livros ao catálogo, basta incluir uma entrada nesse arquivo.
+
+## Estante e capas
+
+Cada livro aparece numa prateleira de madeira. Livros em **EPUB** usam a capa real do arquivo; os demais ganham uma capa desenhada. A seção **Continuar lendo** reabre o último livro de onde você parou.
+
+## Onde achar mais livros e audiobooks grátis
 
 - [Project Gutenberg](https://www.gutenberg.org) e [Standard Ebooks](https://standardebooks.org) — EPUB de domínio público.
 - [LibriVox](https://librivox.org) e [Internet Archive](https://archive.org) — audiobooks em MP3.

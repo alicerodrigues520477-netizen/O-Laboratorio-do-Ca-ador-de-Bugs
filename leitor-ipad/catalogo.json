@@ -1,0 +1,363 @@
+{
+ "version": 1,
+ "books": [
+  {
+   "id": "cat-small-steps",
+   "title": "Small Steps",
+   "subtitle": "A Gentle Guide to a Better Day",
+   "author": "Alice's Library (texto original)",
+   "level": "A2",
+   "topics": [
+    "Autoajuda"
+   ],
+   "hue": 160,
+   "blurb": "Oito capítulos curtos sobre hábitos, medo, amizade e gratidão, com vocabulário no fim de cada um.",
+   "chapters": [
+    {
+     "title": "Chapter 1 — Start Small",
+     "paras": [
+      "Do you want to change your life? That is a big idea. Big ideas can feel heavy. So let us make the idea small.",
+      "Think of one small thing. It can take only two minutes. Drink a glass of water. Write one sentence in a notebook. Walk to the end of your street.",
+      "Small things are easy. When something is easy, you do it again tomorrow. After one week, it becomes a habit. After one month, it becomes a part of you.",
+      "You do not need a perfect plan. You do not need a lot of time. You only need to begin.",
+      "Today, choose one small step. Say it out loud: “I can do this.”",
+      "## Words to learn",
+      "habit — something you do again and again.",
+      "plan — an idea about what you will do.",
+      "begin — to start."
+     ]
+    },
+    {
+     "title": "Chapter 2 — A Good Morning",
+     "paras": [
+      "The first hour of the day is special. It tells your mind what kind of day it will be.",
+      "Try not to look at your phone right away. Stand up slowly. Open the window. Take three deep breaths. Breathe in… and breathe out.",
+      "Then think of one good thing for today. Maybe you will see a friend. Maybe you will eat your favourite food. Maybe you will learn a new word.",
+      "A calm morning does not have to be long. Ten minutes is enough. Be kind to yourself, and begin the day with a smile.",
+      "## Words to learn",
+      "breathe — to take air in and out.",
+      "calm — quiet and peaceful.",
+      "favourite — the one you like best."
+     ]
+    },
+    {
+     "title": "Chapter 3 — When You Feel Afraid",
+     "paras": [
+      "Everyone feels afraid sometimes. Children feel afraid. Adults feel afraid too. Fear is not a bad thing. It tells you that something is important to you.",
+      "But fear can stop you. It says, “Do not try. You will fail.” What can you do?",
+      "First, name your fear. Say, “I am afraid of speaking English in front of people.” When you name it, it gets smaller.",
+      "Second, make a very small plan. Say one sentence to one friend. Then say two sentences. Then say three.",
+      "Third, remember this: being brave does not mean having no fear. Being brave means you do it a little bit afraid.",
+      "You are stronger than you think.",
+      "## Words to learn",
+      "fear — the feeling when you think something bad can happen.",
+      "brave — ready to do hard things.",
+      "fail — to not succeed."
+     ]
+    },
+    {
+     "title": "Chapter 4 — Be Kind to Yourself",
+     "paras": [
+      "Imagine a good friend makes a mistake. What do you say? You probably say, “It is okay. Try again.”",
+      "Now imagine you make a mistake. What do you say to yourself? Sometimes we are very hard on ourselves. We say, “I am so stupid.” We would never say that to a friend.",
+      "Try this: speak to yourself the way you speak to a friend. When you make a mistake, say, “It is okay. I am learning.”",
+      "Everybody makes mistakes. Mistakes are how we learn to walk, to cook, and to speak a new language. Without mistakes, there is no learning.",
+      "Today, say one kind thing to yourself.",
+      "## Words to learn",
+      "mistake — something that is not right.",
+      "kind — good and gentle to other people.",
+      "hard on yourself — too strict with yourself."
+     ]
+    },
+    {
+     "title": "Chapter 5 — Good Friends",
+     "paras": [
+      "Good friends make life better. They listen. They laugh with you. They help you when things are hard.",
+      "But good friends need time. Send a message to a friend today. Ask, “How are you?” and really listen to the answer.",
+      "Be a good friend too. Say thank you. Say sorry when you are wrong. Remember birthdays. Small things show that you care.",
+      "You do not need many friends. Two or three good friends are a gift.",
+      "Who do you want to call today?",
+      "## Words to learn",
+      "listen — to pay attention to a person or a sound.",
+      "care — to feel love for someone.",
+      "gift — something special that you receive."
+     ]
+    },
+    {
+     "title": "Chapter 6 — Say Thank You",
+     "paras": [
+      "Gratitude is a big word. It means feeling thankful for the good things in your life.",
+      "Here is a simple exercise. Every night, write three good things from your day. They can be very small: a warm cup of tea, a kind word, a sunny sky.",
+      "After two weeks, something happens. You start to look for good things during the day. Your eyes learn to see them.",
+      "This does not mean that problems disappear. It means that you can see more than the problems.",
+      "Tonight, find three good things. Write them down.",
+      "## Words to learn",
+      "gratitude — the feeling of being thankful.",
+      "exercise — a small activity to practise something.",
+      "disappear — to go away and not be seen."
+     ]
+    },
+    {
+     "title": "Chapter 7 — Rest and Sleep",
+     "paras": [
+      "Your body and your mind need rest. Without sleep, everything feels harder. Learning feels harder. Even being kind feels harder.",
+      "Here are some simple ideas for better sleep. Go to bed at the same time every night. Turn off your phone one hour before bed. Keep your room dark and quiet. Drink something warm, but not coffee.",
+      "If your mind is busy at night, write your thoughts on paper. Then say to yourself, “I can think about this tomorrow.”",
+      "Rest is not lazy. Rest is how you get ready for tomorrow.",
+      "## Words to learn",
+      "rest — to stop work and relax.",
+      "busy — having a lot to do or to think about.",
+      "lazy — not wanting to work."
+     ]
+    },
+    {
+     "title": "Chapter 8 — Never Stop Learning",
+     "paras": [
+      "You are never too old to learn. Learning keeps your mind young and your life interesting.",
+      "Learn a little every day. Ten new words. One new song. One page of a book. Fifteen minutes is enough if you do it every day.",
+      "You will make mistakes. That is fine. You will forget words. That is fine too. Just come back tomorrow.",
+      "In one year, you will look back and say, “Wow, I have come a long way.”",
+      "Today you finished this little book. That is a small step. Well done! Now take the next one.",
+      "## Words to learn",
+      "learn — to get new knowledge.",
+      "forget — to not remember.",
+      "come a long way — to make a lot of progress."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cat-one-thought",
+   "title": "One Thought a Day",
+   "subtitle": "Thirty small thoughts to read slowly",
+   "author": "Alice's Library (texto original)",
+   "level": "A1",
+   "topics": [
+    "Autoajuda"
+   ],
+   "hue": 28,
+   "blurb": "Trinta pensamentos curtíssimos, um por dia. Perfeito para criar o hábito de ler em inglês.",
+   "chapters": [
+    {
+     "title": "Week 1 — Begin",
+     "paras": [
+      "Day 1. Today is a new page. Write something good on it.",
+      "Day 2. You do not have to be perfect. You only have to try.",
+      "Day 3. A small step is still a step. Keep walking.",
+      "Day 4. Drink some water. Take a deep breath. You are doing fine.",
+      "Day 5. Do one thing now, not ten things later.",
+      "Day 6. Your best is enough for today. Tomorrow you can do a little more.",
+      "Day 7. Look back at this week. You did more than you thought."
+     ]
+    },
+    {
+     "title": "Week 2 — Be Kind",
+     "paras": [
+      "Day 8. Smile at one person today. A smile costs nothing.",
+      "Day 9. Listen with your ears and with your heart.",
+      "Day 10. Say “thank you” to someone who helps you.",
+      "Day 11. Kind words are like warm tea. They help on cold days.",
+      "Day 12. If you feel angry, wait. Count to ten. Then speak slowly.",
+      "Day 13. Forgive someone today. It will make your heart lighter.",
+      "Day 14. Be as kind to yourself as you are to your friends."
+     ]
+    },
+    {
+     "title": "Week 3 — Be Brave",
+     "paras": [
+      "Day 15. Fear is a visitor. It does not have to stay for dinner.",
+      "Day 16. Do one thing today that is a little bit hard.",
+      "Day 17. It is okay to ask for help. Strong people ask for help.",
+      "Day 18. You will not know until you try. So try.",
+      "Day 19. A mistake is not the end of the road. It is part of the road.",
+      "Day 20. Say your idea out loud. Someone needs to hear it.",
+      "Day 21. You have been brave before. You can be brave again."
+     ]
+    },
+    {
+     "title": "Week 4 — Be Thankful",
+     "paras": [
+      "Day 22. Name three good things from your day.",
+      "Day 23. Look at the sky. It is free, and it is beautiful.",
+      "Day 24. Thank your body. It works hard for you every day.",
+      "Day 25. Call a friend and say, “I am happy that you are in my life.”",
+      "Day 26. Enjoy one simple thing: a song, a flower, a hot shower.",
+      "Day 27. What you have today was once only a wish.",
+      "Day 28. Be thankful for the hard days too. They make you strong."
+     ]
+    },
+    {
+     "title": "The Last Days — Keep Going",
+     "paras": [
+      "Day 29. Read this book again. You will understand more.",
+      "Day 30. You came so far. Be proud of yourself. Now begin again, a little better."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cat-daily-prayers",
+   "title": "Prayers for Every Day",
+   "subtitle": "Simple prayers in simple English",
+   "author": "Alice's Library (texto original)",
+   "level": "A1",
+   "topics": [
+    "Orações"
+   ],
+   "hue": 222,
+   "blurb": "Doze orações curtas para o dia a dia, o Pai Nosso e o Salmo 23 (com versão em palavras simples) e uma lista de vocabulário.",
+   "chapters": [
+    {
+     "title": "1 — A Morning Prayer",
+     "paras": [
+      "Dear God, thank you for this new day. Thank you for my sleep and for my home.",
+      "Please be with me today. Help me to be kind. Help me to work well. Help me to speak with love.",
+      "Keep my family safe. Amen."
+     ]
+    },
+    {
+     "title": "2 — An Evening Prayer",
+     "paras": [
+      "Dear God, the day is over. Thank you for everything good that happened today.",
+      "I am sorry for the things I did wrong. Please forgive me.",
+      "Give me a quiet night and good sleep. Watch over the people I love. Tomorrow I will try again. Amen."
+     ]
+    },
+    {
+     "title": "3 — A Prayer Before a Meal",
+     "paras": [
+      "Thank you, God, for this food. Thank you for the hands that made it.",
+      "Please give food to people who are hungry. Bless this table and the people at it. Amen."
+     ]
+    },
+    {
+     "title": "4 — A Prayer of Thanks",
+     "paras": [
+      "Thank you, God, for the sun and the rain. Thank you for my body, my mind, and my heart.",
+      "Thank you for my friends and my family. Thank you for small things, like a smile or a cup of tea.",
+      "My heart is full. Amen."
+     ]
+    },
+    {
+     "title": "5 — A Prayer for My Family",
+     "paras": [
+      "God, please bless my family. Give us love in our home.",
+      "When we are tired, give us patience. When we argue, help us to say sorry.",
+      "Keep us together and keep us safe. Amen."
+     ]
+    },
+    {
+     "title": "6 — A Prayer for a Sick Friend",
+     "paras": [
+      "God, my friend is sick. Please give my friend strength and take away the pain and the fear.",
+      "Give the doctors wisdom. Help my friend to feel that they are not alone.",
+      "I will call my friend today. Amen."
+     ]
+    },
+    {
+     "title": "7 — A Prayer When I Am Afraid",
+     "paras": [
+      "God, I feel afraid. My heart is fast and my mind is full of worries.",
+      "Please stay close to me. Help me to breathe slowly. Remind me that You are with me.",
+      "Give me courage for one more step. Amen."
+     ]
+    },
+    {
+     "title": "8 — A Prayer When I Am Sad",
+     "paras": [
+      "God, today my heart is heavy. I do not have many words.",
+      "Please sit with me in this sad time. Help me to know that it will not last forever.",
+      "Send me someone kind to talk to. Hold me until I feel better. Amen."
+     ]
+    },
+    {
+     "title": "9 — A Prayer for Peace",
+     "paras": [
+      "God of peace, our world has many wars and much pain. Please touch the hearts of leaders.",
+      "Help people to listen to each other. Let there be peace in countries, in cities, in homes, and in my heart.",
+      "Let it start with me. Amen."
+     ]
+    },
+    {
+     "title": "10 — A Prayer for Work and Study",
+     "paras": [
+      "God, I have a lot to do today. Please give me a clear mind and a calm heart.",
+      "Help me to pay attention. Help me to do my best and not to worry about the rest.",
+      "Thank you for the chance to learn and to work. Amen."
+     ]
+    },
+    {
+     "title": "11 — A Prayer for Strength",
+     "paras": [
+      "God, I am tired. I feel that I cannot go on.",
+      "Give me new strength, like the morning gives new light. Help me to rest when I need it. Help me to try again when I am ready.",
+      "I am not alone, because You are with me. Amen."
+     ]
+    },
+    {
+     "title": "12 — A Prayer for Forgiveness",
+     "paras": [
+      "God, I made a mistake. I hurt someone, and I am sorry. Please forgive me.",
+      "Help me to say sorry to that person. Help me to forgive the people who hurt me too.",
+      "Make my heart soft and clean. Amen."
+     ]
+    },
+    {
+     "title": "13 — The Lord’s Prayer",
+     "paras": [
+      "This is the best-known prayer in the Christian world. First, read the classic words. They are old English. After that, read the same prayer in simple words.",
+      "## Classic words",
+      "Our Father, which art in heaven, hallowed be thy name.",
+      "Thy kingdom come, thy will be done in earth, as it is in heaven.",
+      "Give us this day our daily bread. And forgive us our debts, as we forgive our debtors.",
+      "And lead us not into temptation, but deliver us from evil: for thine is the kingdom, and the power, and the glory, for ever. Amen.",
+      "## In simple words",
+      "Our Father in heaven, may your name be holy.",
+      "May your kingdom come. May your will be done on earth as it is in heaven.",
+      "Give us today the food we need. Forgive us when we do wrong, as we forgive the people who do wrong to us.",
+      "Keep us away from bad things, and keep us safe from evil. Amen."
+     ]
+    },
+    {
+     "title": "14 — Psalm 23",
+     "paras": [
+      "Psalm 23 is a very old song of trust in God. First, read the classic words. After that, read it again in simple words.",
+      "## Classic words",
+      "The LORD is my shepherd; I shall not want.",
+      "He maketh me to lie down in green pastures: he leadeth me beside the still waters.",
+      "He restoreth my soul: he leadeth me in the paths of righteousness for his name’s sake.",
+      "Yea, though I walk through the valley of the shadow of death, I will fear no evil: for thou art with me; thy rod and thy staff they comfort me.",
+      "Thou preparest a table before me in the presence of mine enemies: thou anointest my head with oil; my cup runneth over.",
+      "Surely goodness and mercy shall follow me all the days of my life: and I will dwell in the house of the LORD for ever.",
+      "## In simple words",
+      "The Lord is my shepherd. I have everything I need.",
+      "He lets me rest in green fields. He leads me to quiet water. He gives me new strength.",
+      "He shows me the right way. Even when I walk through a very dark valley, I am not afraid, because you are with me. Your stick and your staff comfort me.",
+      "You prepare a table for me, and my enemies can see it. My cup is full.",
+      "Goodness and love will follow me all the days of my life, and I will live in the house of the Lord for ever."
+     ]
+    },
+    {
+     "title": "Words to Learn",
+     "paras": [
+      "Here are some useful words from these prayers.",
+      "pray — to speak to God.",
+      "amen — a word at the end of a prayer. It means “let it be so”.",
+      "bless — to ask God to give good things to someone.",
+      "forgive — to stop being angry with someone, or to ask God to do that for you.",
+      "thankful — happy about something good.",
+      "patience — the power to wait calmly.",
+      "courage — the strength to do something that is hard or scary.",
+      "worry — to think about problems in a sad or afraid way.",
+      "peace — a calm time without fighting or noise.",
+      "strength — the power to do hard things.",
+      "wisdom — the power to know what is right and good.",
+      "shepherd — a person who takes care of sheep.",
+      "valley — low land between two hills.",
+      "Old English: thy = your; thee = you; thou = you; art = are; hallowed = holy; maketh = makes; leadeth = leads; restoreth = gives back."
+     ]
+    }
+   ]
+  }
+ ]
+}
