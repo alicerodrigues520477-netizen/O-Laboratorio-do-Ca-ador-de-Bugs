@@ -1,4 +1,4 @@
-# 📖 Livro em Voz
+# 📖 Alice's Library
 
 Leitor gratuito de livros em inglês para iPad, com **páginas que viram**, **leitura em voz alta** com a frase destacada e **player de audiolivro**. Roda direto no Safari como app (PWA): sem App Store, sem conta, sem anúncios, sem servidor — os livros ficam só no seu iPad.
 

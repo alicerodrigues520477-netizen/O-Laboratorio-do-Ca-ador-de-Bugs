@@ -1,5 +1,5 @@
 /* Cache simples para o app abrir offline depois da primeira visita. */
-const CACHE = 'livro-em-voz-v1';
+const CACHE = 'alices-library-v2';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'lib/jszip.min.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

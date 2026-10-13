@@ -1,4 +1,4 @@
-/* Livro em Voz — leitor de livros em inglês com virada de página, leitura em voz alta e player de audiolivro.
+/* Alice's Library — leitor de livros em inglês com virada de página, leitura em voz alta e player de audiolivro.
    Tudo roda no próprio aparelho (sem servidor, sem conta, sem anúncios). */
 (() => {
 'use strict';
@@ -270,7 +270,7 @@ function renderShelf() {
     const h = hueOf(b.title);
     open.style.background = `linear-gradient(160deg, hsl(${h} 42% 34%), hsl(${(h + 30) % 360} 48% 17%))`;
     const top = el('div'); top.append(el('div', 't', b.title), el('div', 'orn'));
-    open.append(top, el('div', 'a', b.author || ''));
+    open.append(el('div', 'mono', (b.title.match(/[A-Za-zÀ-ÿ]/) || ['·'])[0].toUpperCase()), top, el('div', 'a', b.author || ''));
     open.addEventListener('click', () => openBook(b.id));
     const del = el('button', 'del', '✕'); del.type = 'button'; del.setAttribute('aria-label', 'Remover ' + b.title);
     del.addEventListener('click', async e => {
@@ -285,7 +285,8 @@ function renderShelf() {
     const pct = Math.round((store.get('lv:pct:' + b.id, 0)) * 100);
     const prog = el('div', 'prog'); const bar = el('i'); bar.style.width = pct + '%'; prog.append(bar);
     const meta = el('div', 'meta'); meta.append(el('span', null, pct ? pct + '% lido' : 'Novo'), el('span', null, b.chapters + ' cap.'));
-    card.append(open, del, prog, meta);
+    const slot = el('div', 'slot'); slot.append(open);
+    card.append(slot, del, prog, meta);
     shelf.append(card);
   }
 }
@@ -807,7 +808,7 @@ function attachAudio(blob, name, id) {
   audio.addEventListener('loadedmetadata', () => { if (saved && saved < audio.duration) audio.currentTime = saved; updateAudioUi(); }, { once: true });
   audio.playbackRate = +$('#a-speed').value;
   if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({ title: book.title, artist: book.author || 'Audiolivro', album: 'Livro em Voz' });
+    navigator.mediaSession.metadata = new MediaMetadata({ title: book.title, artist: book.author || 'Audiolivro', album: 'Alice\'s Library' });
     navigator.mediaSession.setActionHandler('play', () => audio.play());
     navigator.mediaSession.setActionHandler('pause', () => audio.pause());
     navigator.mediaSession.setActionHandler('seekbackward', () => skip(-15));
@@ -884,7 +885,7 @@ function applySettings() {
   $('#fs-val').textContent = S.size; $('#chk-sound').checked = S.sound;
   $('#tts-rate').textContent = fmtRate(S.rate); $('#rate-val').textContent = fmtRate(S.rate); $('#rng-rate').value = S.rate;
   document.documentElement.style.setProperty('--fs', S.size + 'px');
-  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = S.theme === 'night' ? '#0c0b0a' : '#3a241c';
+  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = S.theme === 'night' ? '#0c0b0a' : '#2a1a14';
 }
 
 /** Recalcula as páginas mantendo o leitor na mesma frase (rotação, fonte, tema). */
