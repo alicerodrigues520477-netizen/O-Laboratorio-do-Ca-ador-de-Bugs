@@ -72,7 +72,13 @@
       <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></svg>
     </button>
     <div class="titles"><strong id="bk-title">—</strong><span id="bk-chapter"></span></div>
-    <button class="icon" id="btn-toc" aria-label="Capítulos">
+    <button class="icon" id="btn-search" aria-label="Buscar no texto">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l5 5" /></svg>
+    </button>
+    <button class="icon" id="btn-bm" aria-label="Marcar esta página">
+      <svg viewBox="0 0 24 24"><path d="M7 4h10v16l-5-4-5 4z" /></svg>
+    </button>
+    <button class="icon" id="btn-toc" aria-label="Índice, marcadores e destaques">
       <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
     </button>
     <button class="icon" id="btn-audio" aria-label="Audiolivro">
@@ -106,8 +112,23 @@
 <div id="scrim" hidden></div>
 
 <aside id="sheet-toc" class="sheet" hidden>
-  <div class="sheet-head"><h2>Capítulos</h2><button class="icon close" data-close aria-label="Fechar">✕</button></div>
+  <div class="sheet-head"><h2>Índice</h2><button class="icon close" data-close aria-label="Fechar">✕</button></div>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="toc" class="on">Capítulos</button>
+    <button type="button" role="tab" data-tab="bm">Marcadores</button>
+    <button type="button" role="tab" data-tab="notes">Destaques</button>
+  </div>
   <ol id="toc-list"></ol>
+  <div id="bm-list" class="alist" hidden></div>
+  <div id="notes-list" class="alist" hidden></div>
+  <button type="button" class="btn" id="btn-copy-notes" hidden>Copiar para a área de transferência</button>
+</aside>
+
+<aside id="sheet-search" class="sheet" hidden>
+  <div class="sheet-head"><h2>Buscar</h2><button class="icon close" data-close aria-label="Fechar">✕</button></div>
+  <input id="q" type="search" placeholder="Buscar palavra ou frase no livro…" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+  <p id="q-status" class="muted"></p>
+  <ul id="q-results" class="results"></ul>
 </aside>
 
 <aside id="sheet-settings" class="sheet" hidden>
@@ -196,6 +217,26 @@
     <button class="btn danger" id="a-remove">Remover áudio deste livro</button>
   </div>
 </aside>
+
+<div id="note-modal" class="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Anotação">
+    <h3>Anotação</h3>
+    <blockquote id="note-quote"></blockquote>
+    <textarea id="note-text" rows="5" placeholder="Escreva sua anotação…"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="note-cancel">Cancelar</button>
+      <button type="button" class="btn danger" id="note-del">Apagar nota</button>
+      <button type="button" class="btn primary" id="note-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="search-pill" class="pill" hidden>
+  <button type="button" id="sp-prev" aria-label="Resultado anterior">‹</button>
+  <span id="sp-label">1 / 1</span>
+  <button type="button" id="sp-next" aria-label="Próximo resultado">›</button>
+  <button type="button" id="sp-close" aria-label="Fechar busca">✕</button>
+</div>
 
 <div id="toast" role="status" hidden></div>
 

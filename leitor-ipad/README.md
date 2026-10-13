@@ -22,6 +22,18 @@ Leitor gratuito de livros em inglês para iPad, com **páginas que viram**, **le
 | Tamanho, tema, fonte, voz, velocidade | botão **Aa** |
 | Audiolivro (MP3/M4A/M4B) | botão 🎧 → anexar arquivo |
 
+## Busca, marcadores e anotações
+
+| Ação | Como |
+|---|---|
+| Buscar no livro | botão 🔍 (ou ⌘F com teclado). Ignora maiúsculas e acentos; toque num resultado e use ‹ › para passar de um para outro |
+| Marcar a página | botão 🔖: aparece uma fita dourada no canto da página; toque de novo para tirar |
+| Destacar uma frase | **segure o dedo** sobre a frase e escolha a cor (amarelo, verde, rosa ou azul) |
+| Anotar | segure o dedo na frase → **Anotar**. Frases com nota ficam com sublinhado pontilhado |
+| Ver tudo e copiar | botão ☰ → abas **Marcadores** e **Destaques** → *Copiar para a área de transferência* |
+
+Marcadores, destaques e notas são guardados **neste iPad** (no Safari), por livro, e se mantêm ao mudar o tamanho da letra ou girar a tela. O destaque é sempre da **frase inteira**, não de palavras soltas. Limpar os dados do Safari apaga tudo; use *Copiar* para guardar uma cópia das suas anotações.
+
 - **Paisagem** mostra duas páginas (livro aberto); **retrato** mostra uma.
 - A posição de leitura e do áudio é salva automaticamente.
 - Formatos de livro: **.epub** e **.txt** (inclusive os do Project Gutenberg).
