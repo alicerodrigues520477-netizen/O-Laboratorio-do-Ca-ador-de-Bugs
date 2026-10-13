@@ -354,3 +354,10 @@ input.switch:checked { background: #b88f3a; }
 
 .cover.lv .t { margin-top: 22px; }
 .cover.lv .mono { transform: translateY(-38%); }
+
+/* filtro do catálogo */
+.cat-filter { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 auto 26px; }
+.fchip { padding: 9px 16px; border-radius: 999px; font: 600 13.5px var(--font-ui); letter-spacing: .03em; color: var(--ui-ink); border: 1px solid rgba(201,162,75,.35); background: rgba(255,248,230,.05); }
+.fchip.on { background: linear-gradient(180deg, #ecd48f, #b88f3a); color: #2c1a0e; border-color: transparent; box-shadow: 0 4px 12px rgba(0,0,0,.4); }
+
+.flow h1 + p.nodrop::first-letter, .flow h2 + p.nodrop::first-letter { float: none; font: inherit; padding: 0; color: inherit; line-height: inherit; }

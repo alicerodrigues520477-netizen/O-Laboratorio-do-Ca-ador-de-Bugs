@@ -34,7 +34,15 @@ Na biblioteca, a seção **Livros grátis para começar** tem livros em inglês 
 |---|---|---|
 | *Small Steps* | A2 | Autoajuda: hábitos, medo, amizade, gratidão (com vocabulário em cada capítulo) |
 | *One Thought a Day* | A1 | Autoajuda: 30 pensamentos curtos, um por dia |
+| *Calm in Five Minutes* | A2 | Autoajuda: exercícios de respiração, atenção e relaxamento em passos curtos |
+| *A Little Book of Gratitude* | A1 | Autoajuda e inglês: diário de 21 dias com uma frase para escrever por dia |
+| *Speak English with Confidence* | A2 | Autoajuda e inglês: hábitos e frases úteis para perder o medo de falar |
 | *Prayers for Every Day* | A1 | Orações: 12 orações do dia a dia, Pai Nosso e Salmo 23 (texto clássico + palavras simples) |
+| *Prayers for Hard Days* | A2 | Orações: insônia, preocupação, solidão, raiva, cansaço, espera, dúvida, luto, cura |
+| *Verses of Hope* | A2 | Orações: 10 versículos (Salmos, Provérbios, Isaías, Mateus, João…) com texto clássico, versão simples e uma pergunta |
+| *Stories of Courage* | A2 | Histórias: 5 histórias curtas sobre coragem, perdão e gentileza |
+
+No catálogo há um filtro por tema (Autoajuda, Orações, Histórias, Aprender inglês). Nos textos bíblicos, o inglês clássico é a *King James Version* (domínio público); as versões "in simple words" são originais e não são uma tradução oficial.
 
 Os textos ficam em `catalogo.json`; para adicionar mais livros ao catálogo, basta incluir uma entrada nesse arquivo.
 
