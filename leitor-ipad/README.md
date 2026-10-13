@@ -22,6 +22,16 @@ Leitor gratuito de livros em inglês para iPad, com **páginas que viram**, **le
 | Tamanho, tema, fonte, voz, velocidade | botão **Aa** |
 | Audiolivro (MP3/M4A/M4B) | botão 🎧 → anexar arquivo |
 
+## Dicionário inglês → português
+
+Toque numa palavra do texto e abre um cartão com a **tradução**, a classe gramatical e o botão 🔊 para ouvir a pronúncia.
+
+- **Dicionário embutido (funciona offline):** cerca de 1.470 palavras e 370 formas irregulares, incluindo todas as palavras dos livros do catálogo. Ele entende flexões: *walked → walk*, *children → child*, *making → make*, *happily → happy*. Em compostos com hífen (*rabbit-hole*) mostra cada parte.
+- **Reserva pela internet:** se a palavra não estiver no dicionário embutido (por exemplo, num EPUB que você importou), o app busca a tradução automática (MyMemory) e a definição em inglês com fonética (dictionaryapi.dev). Nesse caso a palavra, ou a frase, é enviada a esses serviços gratuitos. Dá para desligar em **Aa › Buscar na internet…**. A tradução automática pode errar.
+- **Botões do cartão:** ☆ Salvar (guarda no vocabulário), ▶ Ler frase e Traduzir frase (internet).
+- **Meu vocabulário:** na biblioteca, o botão 📚 lista as palavras salvas, com a frase onde apareceram, e tem a **Revisão** com flashcards (repetição espaçada: “Já sei” adia a próxima revisão para 1, 2, 4, 8, 16 e 32 dias; “Ver de novo” volta em 10 minutos).
+- No meio da tela, tocar numa palavra abre o dicionário; tocar nas margens externas ou num espaço em branco continua virando a página, e as faixas de cima e de baixo mostram/escondem os controles. Para voltar ao comportamento antigo (duplo toque lê a frase), desligue **Aa › Tocar numa palavra mostra o significado**.
+
 ## Busca, marcadores e anotações
 
 | Ação | Como |

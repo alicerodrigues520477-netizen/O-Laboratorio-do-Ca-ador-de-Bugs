@@ -31,6 +31,7 @@
   <section class="lib-actions">
     <label class="btn primary" for="file-book">＋ Adicionar livro (.epub ou .txt)</label>
     <input id="file-book" type="file" accept=".epub,.txt,application/epub+zip,text/plain" hidden>
+    <button type="button" class="btn" id="btn-vocab">📚 Meu vocabulário</button>
   </section>
 
   <section id="hero" class="hero" hidden></section>
@@ -124,6 +125,14 @@
   <button type="button" class="btn" id="btn-copy-notes" hidden>Copiar para a área de transferência</button>
 </aside>
 
+<aside id="sheet-vocab" class="sheet" hidden>
+  <div class="sheet-head"><h2>Meu vocabulário</h2><button class="icon close" data-close aria-label="Fechar">✕</button></div>
+  <p id="vocab-sum" class="muted"></p>
+  <button type="button" class="btn primary" id="btn-review">Revisar agora</button>
+  <div id="vocab-list" class="alist"></div>
+  <button type="button" class="btn" id="btn-copy-vocab" hidden>Copiar lista</button>
+</aside>
+
 <aside id="sheet-search" class="sheet" hidden>
   <div class="sheet-head"><h2>Buscar</h2><button class="icon close" data-close aria-label="Fechar">✕</button></div>
   <input id="q" type="search" placeholder="Buscar palavra ou frase no livro…" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
@@ -163,6 +172,16 @@
   <div class="row">
     <label for="chk-sound">Som de página virando</label>
     <input type="checkbox" id="chk-sound" class="switch">
+  </div>
+
+  <div class="row">
+    <label for="chk-dict">Tocar numa palavra mostra o significado</label>
+    <input type="checkbox" id="chk-dict" class="switch">
+  </div>
+
+  <div class="row">
+    <label for="chk-online">Buscar na internet palavras que o dicionário do app não tem</label>
+    <input type="checkbox" id="chk-online" class="switch">
   </div>
 
   <div class="row col">
@@ -218,6 +237,13 @@
   </div>
 </aside>
 
+<div id="flash-modal" class="modal" hidden>
+  <div class="modal-card flash" role="dialog" aria-modal="true" aria-label="Revisão de palavras">
+    <div class="flash-top"><span id="flash-count"></span><button type="button" class="icon close" id="flash-close" aria-label="Fechar">✕</button></div>
+    <div id="flash-body"></div>
+  </div>
+</div>
+
 <div id="note-modal" class="modal" hidden>
   <div class="modal-card" role="dialog" aria-modal="true" aria-label="Anotação">
     <h3>Anotação</h3>
@@ -241,6 +267,7 @@
 <div id="toast" role="status" hidden></div>
 
 <script src="lib/jszip.min.js"></script>
+<script src="dict.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
