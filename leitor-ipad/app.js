@@ -252,7 +252,11 @@ function parseTxt(text, fname) {
 function paragraphsToChapter(title, paras) {
   const d = el('div');
   d.append(el('h2', null, title));
-  for (const p of paras) d.append(p.startsWith('## ') ? el('h3', null, p.slice(3)) : el('p', null, p));
+  for (const p of paras) {
+    if (p.startsWith('## ')) { d.append(el('h3', null, p.slice(3))); continue; }
+    const para = el('p', /^(Day|Step) \d/.test(p) ? 'nodrop' : null, p);
+    d.append(para);
+  }
   return chapterRecord(title, d);
 }
 
@@ -384,12 +388,22 @@ async function loadCatalog() {
   try { const r = await fetch('catalogo.json'); catalog = (await r.json()).books || []; } catch { catalog = []; }
   return catalog;
 }
+let catFilter = 'Todos';
 async function renderCatalog() {
-  const list = $('#catalog-list');
+  const list = $('#catalog-list'), bar = $('#cat-filter');
   const books = await loadCatalog();
-  list.replaceChildren();
+  list.replaceChildren(); bar.replaceChildren();
   if (!books.length) { list.append(el('p', 'muted', 'Não consegui carregar o catálogo agora. Conecte-se à internet e tente de novo.')); return; }
-  for (const cb of books) {
+  const topics = ['Todos', ...new Set(books.flatMap(b => b.topics))];
+  if (!topics.includes(catFilter)) catFilter = 'Todos';
+  for (const t of topics) {
+    const n = t === 'Todos' ? books.length : books.filter(b => b.topics.includes(t)).length;
+    const b = el('button', 'fchip' + (t === catFilter ? ' on' : ''), `${t} · ${n}`); b.type = 'button';
+    b.setAttribute('aria-pressed', t === catFilter);
+    b.addEventListener('click', () => { catFilter = t; renderCatalog(); });
+    bar.append(b);
+  }
+  for (const cb of books.filter(b => catFilter === 'Todos' || b.topics.includes(catFilter))) {
     const have = lib.some(b => b.id === cb.id);
     const card = el('article', 'cat-card');
     const cover = buildCover(cb); cover.addEventListener('click', () => have ? openBook(cb.id) : addFromCatalog(cb));
@@ -840,8 +854,8 @@ function speakCurrent(fresh) {
     if (tts.c + 1 < book.chapters.length) { tts.c++; tts.idx = 0; return speakCurrent(fresh); }
     ttsStop(); toast('Fim do livro 📖'); return;
   }
-  const text = L.sents[tts.idx];
-  if (!text) { tts.idx++; return speakCurrent(fresh); }
+  const text = (L.sents[tts.idx] || '').replace(/_{2,}/g, ' blank ');
+  if (!text.trim()) { tts.idx++; return speakCurrent(fresh); }
   setHL(tts.c, tts.idx);
   ensureVisible(tts.c, tts.idx);
   saveProgress();
