@@ -439,3 +439,58 @@ input.switch:checked { background: #b88f3a; }
 .pill button { width: 42px; height: 42px; border-radius: 50%; font-size: 24px; line-height: 1; color: var(--ui-ink); }
 .pill button:active { background: rgba(201,162,75,.25); }
 .pill span { min-width: 78px; text-align: center; font: 600 14px var(--font-ui); letter-spacing: .04em; }
+
+/* =====================================================================
+   Dicionário: cartão de significado, vocabulário e flashcards
+   ===================================================================== */
+.wsel { background: rgba(201, 162, 75, .5); border-radius: 3px; box-shadow: 0 0 0 2px rgba(201, 162, 75, .5); }
+.wcard { position: fixed; z-index: 72; width: min(352px, 92vw); max-height: 70vh; overflow-y: auto; padding: 14px 16px 14px; border-radius: 18px;
+  background: linear-gradient(180deg, #2f1e16, #1f1410); border: 1px solid rgba(201,162,75,.5); box-shadow: 0 20px 48px rgba(0,0,0,.65); color: var(--ui-ink); animation: popin .14s ease; }
+.whead { display: flex; align-items: center; gap: 6px; }
+.wtitle { flex: 1; min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+.wtitle strong { font: 400 28px/1.1 var(--font-display); color: #f6ecd4; word-break: break-word; }
+.wphon { font: italic 15px var(--font-display); color: var(--gold-2); opacity: .9; }
+.wbtn { width: 40px; height: 40px; border-radius: 12px; font-size: 18px; background: rgba(255,255,255,.08); flex: none; }
+.wbtn:active { background: rgba(201,162,75,.3); }
+.wbtn.x { background: none; opacity: .6; font-size: 15px; }
+.wbtn.sm { width: 32px; height: 32px; font-size: 15px; }
+.wbody { margin-top: 8px; }
+.wentries { display: flex; flex-direction: column; gap: 2px; }
+.wform { margin: 6px 0 2px; font: italic 13.5px var(--font-display); color: var(--gold-2); opacity: .85; }
+.went { display: flex; align-items: baseline; gap: 10px; padding: 5px 0; }
+.wpos { flex: none; font: 600 10.5px/1.2 var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--gold); min-width: 74px; }
+.wpt { font: 17px/1.4 var(--font-ui); color: #f4ead3; }
+.wpart { margin-bottom: 8px; }
+.wextra { margin-top: 4px; }
+.wlabel { margin: 10px 0 4px; font: 600 10.5px var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+.wdef { margin: 6px 0; font: 15px/1.45 var(--font-ui); color: #e9dcc0; }
+.wdef i { color: var(--gold-2); font-family: var(--font-display); }
+.wex { margin-top: 3px; font: italic 14.5px/1.4 var(--font-display); opacity: .8; }
+.wlink { margin-top: 8px; padding: 0; font: 600 13.5px var(--font-ui); color: var(--gold-2); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(236,217,157,.45); }
+.wsent { margin: 10px 0 0; padding: 9px 12px; border-left: 2px solid var(--gold); background: rgba(255,255,255,.06); font: italic 16px/1.45 var(--font-display); color: #f1e6cc; }
+.wacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(201,162,75,.2); }
+.wact { padding: 9px 14px; border-radius: 999px; border: 1px solid rgba(201,162,75,.45); font: 600 14px var(--font-ui); color: var(--ui-ink); }
+.wact.on { background: linear-gradient(180deg, #ecd48f, #b88f3a); color: #2c1a0e; border-color: transparent; }
+.wact:disabled { opacity: .6; }
+
+/* vocabulário */
+.vhead { display: flex; align-items: center; gap: 8px; }
+.vhead strong { font: 400 22px var(--font-display); color: #f6ecd4; }
+.vpt { margin-top: 2px; font: 16px/1.4 var(--font-ui); color: #efe4ca; }
+.vbook { margin-top: 5px; font: 600 11px var(--font-ui); letter-spacing: .07em; text-transform: uppercase; color: var(--gold); opacity: .8; }
+#vocab-sum { margin: 4px 2px 12px; }
+#btn-review { width: 100%; margin-bottom: 8px; }
+#btn-copy-vocab { width: 100%; margin-top: 16px; }
+
+/* revisão */
+.modal-card.flash { text-align: center; padding: 18px 22px 22px; }
+.flash-top { display: flex; align-items: center; justify-content: space-between; font: 600 13px var(--font-ui); letter-spacing: .08em; color: var(--gold); margin-bottom: 8px; }
+.fc-wr { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 8px 0 12px; }
+.fc-word { font: 400 44px/1.1 var(--font-display); color: #f6ecd4; word-break: break-word; }
+.fc-ex { margin: 0 auto 14px; max-width: 460px; font: italic 17px/1.5 var(--font-display); color: #e9dcc0; }
+.fc-pt { margin: 4px 0 18px; font: 400 28px/1.3 var(--font-display); color: var(--gold-2); }
+.modal-card.flash .modal-actions { justify-content: center; }
+.modal-card.flash .btn.primary { margin-top: 4px; }
+.modal-card.flash h3 { margin-top: 10px; }
+
+.aquote strong, .fc-ex strong { font-style: normal; color: var(--gold-2); }

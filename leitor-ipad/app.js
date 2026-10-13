@@ -22,7 +22,7 @@ function toast(msg, ms = 2600) {
 }
 
 /* ================= ajustes ================= */
-const S = Object.assign({ theme: 'paper', size: 21, font: 'serif', sound: true, rate: 1, voice: '' }, store.get('lv:settings', {}));
+const S = Object.assign({ theme: 'paper', size: 21, font: 'serif', sound: true, rate: 1, voice: '', dict: true, dictOnline: true }, store.get('lv:settings', {}));
 const saveSettings = () => store.set('lv:settings', S);
 
 /* ================= IndexedDB ================= */
@@ -567,6 +567,7 @@ function swapSlot(sel, node) { const old = $(':scope > .page' + sel, bookEl); if
 
 function startFlip(dir) {
   if (flip) return false;
+  closeCard();
   const target = dir > 0 ? nextPos(pos) : prevPos(pos);
   if (!target) { toast(dir > 0 ? 'Fim do livro 📖' : 'Você está no início', 1400); return false; }
   const two = g.per === 2;
@@ -637,7 +638,7 @@ function turn(dir, byUser = true) {
   return true;
 }
 function jumpTo(target, byUser = true) {
-  flip = null; pos = { c: target.c, p: target.p - target.p % g.per };
+  closeCard(); flip = null; pos = { c: target.c, p: target.p - target.p % g.per };
   renderSpread(); afterTurn(byUser);
 }
 
@@ -692,6 +693,7 @@ async function openBook(id) {
   showUI(true);
   store.set('lv:last', id);
   history.replaceState(null, '', '#' + id);
+  if (S.dict && !store.get('lv:tip-dict', false)) { store.set('lv:tip-dict', true); setTimeout(() => toast('Dica: toque numa palavra para ver o significado 📖', 5000), 900); }
 }
 function closeBook() {
   ttsStop(); audioStop(); saveProgress(); resetAnnState(); ann = [];
@@ -960,10 +962,317 @@ document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.ke
 
 /** Zera tudo ao abrir/fechar um livro. */
 function resetAnnState() {
-  closeMenu(); closeNote(); endSearchNav();
+  closeMenu(); closeCard(); closeNote(); endSearchNav();
   results = []; resIdx = -1; searchToken++; sentsCache.clear();
   $('#q').value = ''; $('#q-status').textContent = ''; $('#q-results').replaceChildren();
 }
+
+/* ================= dicionário inglês→português, vocabulário e revisão ================= */
+let dictLoaded = false;
+async function loadDictionary() {
+  try { const r = await fetch('dicionario-en-pt.json'); LvDict.load(await r.json()); dictLoaded = true; } catch { /* sem dicionário: só a busca online */ }
+}
+
+/* ----- qual palavra está sob o dedo? ----- */
+const WORD_CH = /[A-Za-z0-9À-ɏ'’-]/;
+function wordAt(x, y) {
+  let node = null, off = 0;
+  if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; off = p.offset; } }
+  else if (document.caretRangeFromPoint) { const r = document.caretRangeFromPoint(x, y); if (r) { node = r.startContainer; off = r.startOffset; } }
+  if (!node || node.nodeType !== 3 || !bookEl.contains(node)) return null;
+  const t = node.nodeValue;
+  let i = off;
+  if (i >= t.length || !WORD_CH.test(t[i])) { if (i > 0 && WORD_CH.test(t[i - 1])) i -= 1; else return null; }
+  let a = i, b = i + 1;
+  while (a > 0 && WORD_CH.test(t[a - 1])) a--;
+  while (b < t.length && WORD_CH.test(t[b])) b++;
+  while (a < b && /['’-]/.test(t[a])) a++;
+  while (b > a && /['’-]/.test(t[b - 1])) b--;
+  const text = t.slice(a, b);
+  if (!/[A-Za-z]/.test(text)) return null;
+  const range = document.createRange(); range.setStart(node, a); range.setEnd(node, b);
+  const rect = [...range.getClientRects()].find(r => x >= r.left - 6 && x <= r.right + 6 && y >= r.top - 5 && y <= r.bottom + 5);
+  if (!rect) return null;
+  const sp = node.parentElement && node.parentElement.closest('.s'), pg = node.parentElement && node.parentElement.closest('.page');
+  return { text, node, a, b, off: i, rect: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }, c: pg ? +pg.dataset.c : pos.c, s: sp ? +sp.dataset.i : -1 };
+}
+
+/* marca temporariamente a palavra tocada */
+let wsel = null;
+function markWord(node, a, b) {
+  const mid = node.splitText(a); mid.splitText(b - a);
+  const span = el('span', 'wsel'); mid.replaceWith(span); span.append(mid);
+  return span;
+}
+function unmarkWord() {
+  if (!wsel) return;
+  const sp = wsel, parent = sp.parentNode; wsel = null;
+  if (parent) { while (sp.firstChild) parent.insertBefore(sp.firstChild, sp); sp.remove(); parent.normalize(); }
+}
+
+/* ----- consultas online (reserva) ----- */
+const decodeHtml = s => { const t = el('textarea'); t.innerHTML = s; return t.value; };
+async function fetchJSON(url, ms = 7000) {
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), ms);
+  try { const r = await fetch(url, { signal: ctl.signal }); if (!r.ok) throw new Error('http ' + r.status); return await r.json(); }
+  finally { clearTimeout(timer); }
+}
+async function onlineTranslate(text) {                       // inglês → português (MyMemory)
+  const j = await fetchJSON('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=en|pt-BR');
+  const t = j && j.responseData && j.responseData.translatedText;
+  if (!t || /MYMEMORY WARNING|INVALID|QUERY LENGTH|PLEASE SELECT/i.test(t)) throw new Error('sem tradução');
+  const out = decodeHtml(t).trim();
+  if (out.toLowerCase() === text.trim().toLowerCase() && text.trim().includes(' ') === false) throw new Error('sem tradução');
+  return out;
+}
+async function onlineDefine(word) {                          // definição em inglês + pronúncia (dictionaryapi.dev)
+  const j = await fetchJSON('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word));
+  const e = Array.isArray(j) ? j[0] : null;
+  if (!e) throw new Error('sem definição');
+  const ph = (e.phonetics || []);
+  return {
+    phonetic: e.phonetic || (ph.find(p => p.text) || {}).text || '',
+    audio: (ph.find(p => p.audio) || {}).audio || '',
+    meanings: (e.meanings || []).slice(0, 3).map(m => ({ pos: m.partOfSpeech, def: (m.definitions && m.definitions[0] && m.definitions[0].definition) || '', ex: (m.definitions && m.definitions[0] && m.definitions[0].example) || '' })),
+  };
+}
+const dcache = store.get('lv:dcache', {});
+function dcacheSet(k, v) {
+  dcache[k] = Object.assign(dcache[k] || {}, v);
+  const keys = Object.keys(dcache); if (keys.length > 400) delete dcache[keys[0]];
+  store.set('lv:dcache', dcache);
+}
+
+/* ----- pronúncia ----- */
+function speakWord(w, audioUrl) {
+  if (tts.on) ttsStop();
+  if (audioUrl) { try { const a = new Audio(audioUrl); a.play().catch(() => speakPlain(w)); return; } catch { /* usa a voz do aparelho */ } }
+  speakPlain(w);
+}
+function speakPlain(w) {
+  if (!synth) { toast('Este navegador não tem voz para ler a palavra.'); return; }
+  synth.cancel();
+  const u = utter(w); u.rate = Math.min(S.rate, 0.9);
+  setTimeout(() => synth.speak(u), 60);
+}
+
+/* ----- vocabulário salvo ----- */
+let vocab = store.get('lv:vocab', []);
+const saveVocab = () => { store.set('lv:vocab', vocab); updateVocabBtn(); };
+const vkey = w => LvDict.norm(w);
+/** Trecho da frase em volta da palavra (até ~170 caracteres), cortando em limites de palavra. */
+function snippet(sentence, word, max = 170) {
+  if (sentence.length <= max) return sentence;
+  const at = Math.max(0, sentence.toLowerCase().indexOf(word.toLowerCase()));
+  let a = Math.max(0, at - Math.floor(max / 2)), b = Math.min(sentence.length, a + max);
+  a = Math.max(0, b - max);
+  if (a > 0) { const sp = sentence.indexOf(' ', a); if (sp > 0 && sp < at) a = sp + 1; }
+  if (b < sentence.length) { const sp = sentence.lastIndexOf(' ', b); if (sp > at + word.length) b = sp; }
+  return (a > 0 ? '… ' : '') + sentence.slice(a, b).trim() + (b < sentence.length ? ' …' : '');
+}
+/** Cria um elemento com a frase, deixando a palavra em negrito. */
+function exampleEl(cls, text, word) {
+  const box = el('div', cls); const q = '“' + text + '”';
+  const i = word ? q.toLowerCase().indexOf(word.toLowerCase()) : -1;
+  if (i < 0) { box.textContent = q; return box; }
+  box.append(q.slice(0, i), el('strong', null, q.slice(i, i + word.length)), q.slice(i + word.length));
+  return box;
+}
+const isSaved = w => vocab.some(v => v.k === vkey(w));
+function updateVocabBtn() {
+  const due = vocab.filter(v => v.due <= Date.now()).length;
+  const b = $('#btn-vocab'); if (b) b.textContent = '📚 Meu vocabulário' + (vocab.length ? ` · ${vocab.length}` : '') + (due ? ` (${due} p/ revisar)` : '');
+}
+
+/* ----- cartão de significado ----- */
+let cardEl = null, cardToken = 0;
+function closeCard() { if (cardEl) { cardEl.remove(); cardEl = null; } unmarkWord(); cardToken++; }
+document.addEventListener('pointerdown', e => { if (cardEl && !cardEl.contains(e.target) && !stageEl.contains(e.target)) closeCard(); }, true);
+
+function posChip(pos) { return el('span', 'wpos', (LvDict.POS[pos] || pos)); }
+function renderEntries(res) {
+  const wrap = el('div', 'wentries');
+  for (const f of res.forms) {
+    if (!f.direct) wrap.append(el('div', 'wform', `forma de “${f.lemma}”`));
+    for (const [pos, pt] of f.entries) { const row = el('div', 'went'); row.append(posChip(pos), el('span', 'wpt', pt)); wrap.append(row); }
+  }
+  return wrap;
+}
+const primaryPt = res => (res && res.forms[0] && res.forms[0].entries[0][1]) || '';
+
+function placeCard(rect) {
+  if (!cardEl) return;
+  const w = cardEl.offsetWidth, h = cardEl.offsetHeight;
+  let top = rect.bottom + 12; if (top + h > innerHeight - 10) top = rect.top - h - 12;
+  cardEl.style.left = clamp((rect.left + rect.right) / 2 - w / 2, 8, innerWidth - w - 8) + 'px';
+  cardEl.style.top = clamp(top, 8, innerHeight - h - 8) + 'px';
+}
+
+function openCard(hit) {
+  closeCard(); closeMenu();
+  const token = ++cardToken, raw = hit.text, rect = hit.rect;
+  wsel = markWord(hit.node, hit.a, hit.b);
+  const sentence = hit.s >= 0 ? sentText(hit.c, hit.s) : '';
+  const card = el('div', 'wcard'); cardEl = card;
+
+  /* compostos com hífen: tenta o composto inteiro e, se não existir, cada parte */
+  let parts = [raw];
+  if (raw.includes('-') && !LvDict.lookup(raw)) parts = raw.split('-').filter(p => /[A-Za-z]/.test(p));
+  const single = parts.length === 1;
+  const word = single ? raw.replace(/’/g, "'") : raw;
+  const res = single ? LvDict.lookup(raw) : null;
+  const cur = { key: vkey(single ? (res ? res.forms[0].lemma : raw) : raw), shown: word, pt: primaryPt(res), pos: res ? res.forms[0].entries[0][0] : '', audio: '' };
+
+  const head = el('div', 'whead');
+  const title = el('div', 'wtitle'); title.append(el('strong', null, word), el('span', 'wphon'));
+  const bSay = el('button', 'wbtn', '🔊'); bSay.type = 'button'; bSay.setAttribute('aria-label', 'Ouvir a pronúncia');
+  bSay.addEventListener('click', () => speakWord(word, cur.audio));
+  const bX = el('button', 'wbtn x', '✕'); bX.type = 'button'; bX.setAttribute('aria-label', 'Fechar');
+  bX.addEventListener('click', closeCard);
+  head.append(title, bSay, bX);
+
+  const body = el('div', 'wbody'), extra = el('div', 'wextra');
+  card.append(head, body, extra);
+
+  if (!single) {
+    for (const p of parts) {
+      const r = LvDict.lookup(p), blk = el('div', 'wpart');
+      blk.append(el('div', 'wform', p));
+      blk.append(r ? renderEntries(r) : el('div', 'muted', 'sem tradução no dicionário do app'));
+      body.append(blk);
+    }
+    cur.pt = parts.map(p => { const r = LvDict.lookup(p); return r ? p + ': ' + primaryPt(r).split(';')[0] : ''; }).filter(Boolean).join(' · ');
+  } else if (res) {
+    body.append(renderEntries(res));
+  } else if (S.dictOnline) {
+    body.append(el('div', 'muted', 'Procurando na internet…'));
+    onlineTranslate(raw).then(pt => {
+      if (token !== cardToken) return;
+      cur.pt = pt; dcacheSet(cur.key, { pt });
+      body.replaceChildren(); const row = el('div', 'went'); row.append(el('span', 'wpos', 'tradução automática'), el('span', 'wpt', pt)); body.append(row);
+      placeCard(rect);
+    }).catch(() => {
+      if (token !== cardToken) return;
+      const cached = dcache[cur.key] && dcache[cur.key].pt;
+      body.replaceChildren(el('div', 'muted', cached ? cached : 'Não achei esta palavra no dicionário do app e a internet não respondeu. Tente de novo quando estiver conectado.'));
+      if (cached) cur.pt = cached;
+      placeCard(rect);
+    });
+  } else {
+    body.append(el('div', 'muted', 'Esta palavra não está no dicionário do app. Ative a busca na internet em Ajustes para traduzir palavras que faltam.'));
+  }
+
+  /* definição em inglês (online): automática se a palavra não existe offline, sob demanda se existe */
+  const loadDefinition = async () => {
+    extra.replaceChildren(el('div', 'muted', 'Buscando definição…')); placeCard(rect);
+    try {
+      const key = single ? vkey(raw) : vkey(parts[0]);
+      const d = (dcache[key] && dcache[key].def) || await onlineDefine(single ? raw : parts[0]);
+      dcacheSet(key, { def: d });
+      if (token !== cardToken) return;
+      cur.audio = d.audio || ''; $('.wphon', title).textContent = d.phonetic || '';
+      extra.replaceChildren(el('div', 'wlabel', 'Definição em inglês'));
+      for (const m of d.meanings) { const row = el('div', 'wdef'); row.append(el('i', null, m.pos + ' '), m.def); if (m.ex) row.append(el('div', 'wex', '“' + m.ex + '”')); extra.append(row); }
+    } catch { if (token === cardToken) extra.replaceChildren(el('div', 'muted', 'Não consegui buscar a definição agora.')); }
+    placeCard(rect);
+  };
+  if (S.dictOnline) {
+    if (!res && single) loadDefinition();
+    else { const more = el('button', 'wlink', 'Definição em inglês e pronúncia (internet)'); more.type = 'button'; more.addEventListener('click', loadDefinition); extra.append(more); }
+  }
+
+  /* ações */
+  const acts = el('div', 'wacts');
+  const star = el('button', 'wact' + (isSaved(cur.key) ? ' on' : ''), isSaved(cur.key) ? '★ Salva' : '☆ Salvar'); star.type = 'button';
+  star.addEventListener('click', () => {
+    const i = vocab.findIndex(v => v.k === cur.key);
+    if (i >= 0) { vocab.splice(i, 1); star.classList.remove('on'); star.textContent = '☆ Salvar'; }
+    else {
+      vocab.push({ id: uid(), k: cur.key, w: single && res ? res.forms[0].lemma : word, form: word, pt: cur.pt, pos: cur.pos, ex: snippet(sentence, word), book: book.title, t: Date.now(), box: 0, due: Date.now() });
+      star.classList.add('on'); star.textContent = '★ Salva'; toast('Palavra salva no vocabulário 📚', 1500);
+    }
+    saveVocab();
+  });
+  acts.append(star);
+  if (hit.s >= 0) {
+    const rd = el('button', 'wact', '▶ Ler frase'); rd.type = 'button';
+    rd.addEventListener('click', () => { closeCard(); ttsStart(hit.c, hit.s); });
+    acts.append(rd);
+    if (S.dictOnline && sentence) {
+      const tr = el('button', 'wact', 'Traduzir frase'); tr.type = 'button';
+      tr.addEventListener('click', async () => {
+        if (sentence.length > 450) { toast('Frase longa demais para traduzir de uma vez.'); return; }
+        tr.disabled = true; tr.textContent = 'Traduzindo…';
+        try { const t = await onlineTranslate(sentence); if (token !== cardToken) return; let box = $('.wsent', card); if (!box) { box = el('div', 'wsent'); card.insertBefore(box, acts); } box.textContent = t; tr.remove(); }
+        catch { tr.disabled = false; tr.textContent = 'Traduzir frase'; toast('Não consegui traduzir agora (internet?).'); }
+        placeCard(rect);
+      });
+      acts.append(tr);
+    }
+  }
+  card.append(acts);
+  document.body.append(card);
+  placeCard(rect);
+}
+
+/* ----- lista do vocabulário ----- */
+const DAY = 86400000, STEPS = [1, 2, 4, 8, 16, 32];
+function renderVocab() {
+  const list = $('#vocab-list'); list.replaceChildren();
+  const due = vocab.filter(v => v.due <= Date.now()).length;
+  $('#vocab-sum').textContent = vocab.length ? `${vocab.length} palavra${vocab.length > 1 ? 's' : ''} salva${vocab.length > 1 ? 's' : ''} · ${due} para revisar agora` : 'Você ainda não salvou nenhuma palavra. Enquanto lê, toque numa palavra e depois em “Salvar”.';
+  $('#btn-review').hidden = !due; $('#btn-copy-vocab').hidden = !vocab.length;
+  for (const v of [...vocab].sort((a, b) => b.t - a.t)) {
+    const item = el('div', 'aitem'), box = el('div', 'ago');
+    const head = el('div', 'vhead'); head.append(el('strong', null, v.w));
+    const say = el('button', 'wbtn sm', '🔊'); say.type = 'button'; say.addEventListener('click', () => speakWord(v.w));
+    head.append(say);
+    box.append(head, el('div', 'vpt', v.pt || '—'));
+    if (v.ex) box.append(exampleEl('aquote', v.ex, v.form));
+    box.append(el('div', 'vbook', v.book));
+    const del = el('button', 'adel', '✕'); del.type = 'button'; del.setAttribute('aria-label', 'Remover ' + v.w);
+    del.addEventListener('click', () => { vocab = vocab.filter(x => x !== v); saveVocab(); renderVocab(); });
+    item.append(box, del); list.append(item);
+  }
+}
+$('#btn-vocab').addEventListener('click', () => { renderVocab(); openSheet('#sheet-vocab'); });
+$('#btn-copy-vocab').addEventListener('click', () => copyText([...vocab].sort((a, b) => a.k.localeCompare(b.k)).map(v => `${v.w} — ${v.pt}${v.ex ? '\n   “' + v.ex + '”' : ''}`).join('\n')));
+
+/* ----- revisão com flashcards (repetição espaçada simples) ----- */
+let queue = [], qTotal = 0, qDone = 0;
+function startReview() {
+  queue = vocab.filter(v => v.due <= Date.now()).sort((a, b) => a.due - b.due);
+  qTotal = queue.length; qDone = 0;
+  if (!qTotal) { toast('Nada para revisar agora 🎉'); return; }
+  closeSheets(); $('#flash-modal').hidden = false; showCard();
+}
+function showCard() {
+  const body = $('#flash-body'); body.replaceChildren();
+  const v = queue[0];
+  $('#flash-count').textContent = v ? `${Math.min(qDone + 1, qTotal)} / ${qTotal}` : '';
+  if (!v) {
+    body.append(el('h3', null, 'Revisão concluída 🎉'), el('p', 'muted', `Você revisou ${qTotal} palavra${qTotal > 1 ? 's' : ''}. Volte amanhã para as próximas.`));
+    const ok = el('button', 'btn primary', 'Fechar'); ok.type = 'button'; ok.addEventListener('click', closeReview); body.append(ok);
+    return;
+  }
+  const front = el('div', 'fc-front');
+  const w = el('div', 'fc-word', v.w); const say = el('button', 'wbtn', '🔊'); say.type = 'button'; say.addEventListener('click', () => speakWord(v.w));
+  const wr = el('div', 'fc-wr'); wr.append(w, say); front.append(wr);
+  if (v.ex) front.append(exampleEl('fc-ex', v.ex, v.form));
+  const back = el('div', 'fc-back'); back.hidden = true;
+  back.append(el('div', 'fc-pt', v.pt || '—'));
+  const show = el('button', 'btn primary', 'Mostrar tradução'); show.type = 'button';
+  const row = el('div', 'modal-actions'); row.hidden = true;
+  const again = el('button', 'btn', 'Ver de novo'), know = el('button', 'btn primary', 'Já sei'); again.type = know.type = 'button';
+  again.addEventListener('click', () => { v.box = 0; v.due = Date.now() + 10 * 60000; queue.push(queue.shift()); saveVocab(); showCard(); });
+  know.addEventListener('click', () => { v.box = Math.min(v.box + 1, STEPS.length - 1); v.due = Date.now() + STEPS[v.box] * DAY; queue.shift(); qDone++; saveVocab(); showCard(); });
+  row.append(again, know);
+  show.addEventListener('click', () => { back.hidden = false; show.hidden = true; row.hidden = false; });
+  body.append(front, back, show, row);
+}
+function closeReview() { $('#flash-modal').hidden = true; renderVocab(); }
+$('#btn-review').addEventListener('click', startReview);
+$('#flash-close').addEventListener('click', closeReview);
 
 /* ================= interação: toque, arrastar, teclado ================= */
 let uiTimer = null;
@@ -975,8 +1284,9 @@ let drag = null, lastTap = { t: 0, x: 0, y: 0 };
 let lpTimer = null;
 stageEl.addEventListener('pointerdown', e => {
   if (menuEl) { closeMenu(); drag = null; return; }
+  const hadCard = !!cardEl; if (hadCard) closeCard();
   if (flip) return;
-  drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), active: false, dir: 0, target: e.target, lp: false };
+  drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), active: false, dir: 0, target: e.target, lp: false, hadCard };
   clearTimeout(lpTimer);
   const sp = e.target.closest ? e.target.closest('.s') : null;
   if (sp) lpTimer = setTimeout(() => {          // segurar sobre uma frase abre o menu de destaque/anotação
@@ -1015,22 +1325,34 @@ const endDrag = e => {
   }
   if (e.type === 'pointercancel') return;
   if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12) return;
-  onTap(e, d.target);
+  onTap(e, d.target, d.hadCard);
 };
 stageEl.addEventListener('contextmenu', e => e.preventDefault());
 stageEl.addEventListener('pointerup', endDrag);
 stageEl.addEventListener('pointercancel', endDrag);
 
-function onTap(e, target) {
-  const W = innerWidth;
-  if (e.clientX < W * 0.22) { turn(-1, true); return; }
-  if (e.clientX > W * 0.78) { turn(1, true); return; }
+function onTap(e, target, hadCard) {
+  const W = innerWidth, H = innerHeight, x = e.clientX, y = e.clientY;
+  if (S.dict && dictLoaded) {
+    if (x < W * 0.08) { turn(-1, true); return; }          // margens externas: sempre viram a página
+    if (x > W * 0.92) { turn(1, true); return; }
+    if (y > H * 0.14 && y < H * 0.88) {                     // no meio da tela, uma palavra tem prioridade
+      const hit = wordAt(x, y);
+      if (hit) { openCard(hit); return; }
+    }
+    if (hadCard) return;                                     // tocar fora só fecha o cartão
+    if (x < W * 0.22) { turn(-1, true); return; }           // espaço em branco: lados viram a página, centro mostra os controles
+    if (x > W * 0.78) { turn(1, true); return; }
+    toggleUI(); return;
+  }
+  if (x < W * 0.22) { turn(-1, true); return; }
+  if (x > W * 0.78) { turn(1, true); return; }
   const now = performance.now();
   const span = target && target.closest ? target.closest('.s') : null;
-  if (span && now - lastTap.t < 330 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 36) {
+  if (span && now - lastTap.t < 330 && Math.hypot(x - lastTap.x, y - lastTap.y) < 36) {
     lastTap.t = 0; readFromSpan(span); return;
   }
-  lastTap = { t: now, x: e.clientX, y: e.clientY };
+  lastTap = { t: now, x, y };
   toggleUI();
 }
 function readFromSpan(span) {
@@ -1276,9 +1598,9 @@ $('#a-remove').addEventListener('click', async () => {
 });
 
 /* ================= painéis e ajustes ================= */
-const sheets = ['#sheet-toc', '#sheet-settings', '#sheet-audio', '#sheet-search'].map(s => $(s));
+const sheets = ['#sheet-toc', '#sheet-settings', '#sheet-audio', '#sheet-search', '#sheet-vocab'].map(s => $(s));
 const sheetOpen = () => sheets.some(s => !s.hidden);
-function openSheet(id) { closeMenu(); closeSheets(); if (id === '#sheet-toc') renderAnnLists(); $(id).hidden = false; $('#scrim').hidden = false; showUI(false); if (id === '#sheet-audio') syncAudioPanel(); }
+function openSheet(id) { closeMenu(); closeCard(); closeSheets(); if (id === '#sheet-toc') renderAnnLists(); $(id).hidden = false; $('#scrim').hidden = false; showUI(false); if (id === '#sheet-audio') syncAudioPanel(); }
 function closeSheets() { sheets.forEach(s => { s.hidden = true; }); $('#scrim').hidden = true; if (book) showUI(true); }
 $('#scrim').addEventListener('click', closeSheets);
 $$('[data-close]').forEach(b => b.addEventListener('click', closeSheets));
@@ -1292,7 +1614,7 @@ function applySettings() {
   document.body.classList.toggle('sans', S.font === 'sans');
   $$('#seg-theme button').forEach(b => b.classList.toggle('on', b.dataset.v === S.theme));
   $$('#seg-font button').forEach(b => b.classList.toggle('on', b.dataset.v === S.font));
-  $('#fs-val').textContent = S.size; $('#chk-sound').checked = S.sound;
+  $('#fs-val').textContent = S.size; $('#chk-sound').checked = S.sound; $('#chk-dict').checked = S.dict; $('#chk-online').checked = S.dictOnline;
   $('#tts-rate').textContent = fmtRate(S.rate); $('#rate-val').textContent = fmtRate(S.rate); $('#rng-rate').value = S.rate;
   document.documentElement.style.setProperty('--fs', S.size + 'px');
   const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = S.theme === 'night' ? '#0c0b0a' : '#2a1a14';
@@ -1319,6 +1641,8 @@ $('#fs-plus').addEventListener('click', () => { S.size = clamp(S.size + 1, 15, 3
 $$('#seg-theme button').forEach(b => b.addEventListener('click', () => { S.theme = b.dataset.v; saveSettings(); applySettings(); }));
 $$('#seg-font button').forEach(b => b.addEventListener('click', () => { S.font = b.dataset.v; saveSettings(); applySettings(); relayout(); }));
 $('#chk-sound').addEventListener('change', e => { S.sound = e.target.checked; saveSettings(); if (S.sound) pageSound(); });
+$('#chk-dict').addEventListener('change', e => { S.dict = e.target.checked; saveSettings(); });
+$('#chk-online').addEventListener('change', e => { S.dictOnline = e.target.checked; saveSettings(); });
 $('#sel-voice').addEventListener('change', e => { S.voice = e.target.value; saveSettings(); if (tts.on) speakCurrent(true); });
 $('#rng-rate').addEventListener('input', e => setRate(+e.target.value, false));
 $('#rng-rate').addEventListener('change', e => setRate(+e.target.value, true));
@@ -1339,6 +1663,7 @@ $('#file-book').addEventListener('change', async e => {
 /* ================= início ================= */
 (async function init() {
   applySettings();
+  loadDictionary(); updateVocabBtn();
   try { await ensureSample(); } catch (e) { console.error(e); toast('Aviso: o armazenamento do navegador não está disponível.', 5000); }
   renderShelf();
   const hash = location.hash.slice(1);
